@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "kadyshev.dmitry.ui_tracks_core"
+    namespace = "kadyshev.dmitry.ui_saved_tracks"
     compileSdk = 34
 
     defaultConfig {
@@ -30,17 +30,17 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    buildFeatures{
+    buildFeatures {
         viewBinding = true
     }
 }
 
 dependencies {
-    implementation(project(":domain"))
-    implementation(project(":core-player"))
+
     implementation(libs.koin.core)
     implementation(libs.koin.android)
-    implementation(libs.coil)
+    implementation(project(":ui-tracks-core"))
+    implementation(project(":domain"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

@@ -55,7 +55,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":data"))
     implementation(project(":core-player"))
-    implementation(project(":ui-search"))
+    implementation(project(":ui-search-tracks"))
     implementation(project(":ui-tracks-core"))
     implementation(libs.koin.core)
     implementation(libs.androidx.room.runtime)

@@ -42,7 +42,6 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(project(":ui-tracks-core"))
-    implementation(project(":core-player"))
     implementation(project(":domain"))
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     testImplementation(libs.junit)

@@ -4,6 +4,6 @@ import kadyshev.dmitry.domain.entities.Track
 import kotlinx.coroutines.flow.Flow
 
 interface TrackApiRepository {
-    suspend fun searchTracks(query: String): Flow<List<Track>>
+    suspend fun searchTracks(query: String): List<Track>
     suspend fun getChart(): List<Track>
 }

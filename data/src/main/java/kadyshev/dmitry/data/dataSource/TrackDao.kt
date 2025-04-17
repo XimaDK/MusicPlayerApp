@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kadyshev.dmitry.data.dataSource.dbEntity.TrackDBModel
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TrackDao {
@@ -16,7 +17,7 @@ interface TrackDao {
     suspend fun getTrackById(id: Int): TrackDBModel?
 
     @Query("SELECT * FROM tracks")
-    suspend fun getAllTracks(): List<TrackDBModel>
+    fun getAllTracks(): Flow<List<TrackDBModel>>
 
     @Query("DELETE FROM tracks WHERE id = :id")
     suspend fun deleteTrack(id: Int)

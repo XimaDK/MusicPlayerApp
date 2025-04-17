@@ -49,7 +49,8 @@ class Mapper {
             title = dbModel.title,
             previewUrl = dbModel.previewUrl,
             artist = dbModel.artist,
-            coverUrl = dbModel.coverUrl
+            coverUrl = dbModel.coverUrl,
+            isDownloaded = dbModel.isDownloaded
         )
     }
 

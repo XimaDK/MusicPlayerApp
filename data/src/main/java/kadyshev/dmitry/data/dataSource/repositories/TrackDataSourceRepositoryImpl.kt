@@ -7,6 +7,9 @@ import kotlinx.coroutines.withContext
 import kadyshev.dmitry.data.dataSource.TrackDao
 import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.domain.repository.TrackDataSourceRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
@@ -43,11 +46,8 @@ class TrackDataSourceRepositoryImpl(
         return file.absolutePath
     }
 
-    override suspend fun getAllTracks(): List<Track> {
-        return withContext(Dispatchers.IO) {
-            trackDao.getAllTracks().map { entity ->
-                mapper.mapTrackDbModelToEntity(entity)
-            }
-        }
+    override fun getAllTracks(): Flow<List<Track>> {
+        return trackDao.getAllTracks()
+            .map { entities -> entities.map { mapper.mapTrackDbModelToEntity(it) } }
     }
 }

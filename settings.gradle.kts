@@ -23,6 +23,7 @@ rootProject.name = "MusicPlayerApp"
 include(":app")
 include(":data")
 include(":domain")
-include(":ui-search")
+include(":ui-search-tracks")
 include(":ui-tracks-core")
 include(":core-player")
+include(":ui-saved-tracks")

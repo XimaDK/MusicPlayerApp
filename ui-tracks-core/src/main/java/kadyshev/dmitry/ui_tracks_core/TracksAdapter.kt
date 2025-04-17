@@ -41,19 +41,30 @@ class TracksAdapter(
     inner class TrackViewHolder(private val binding: ItemTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(track: Track) = with(binding){
+        fun bind(track: Track) = with(binding) {
             titleTextView.text = track.title
             artistTextView.text = track.artist
             coverImage.load(track.coverUrl) {
                 crossfade(true)
             }
+
             pauseIcon.isVisible = track.id == currentPlayingId
+
+            // Показываем галочку, если трек уже скачан
+            if (track.isDownloaded) {
+                addButton.setImageResource(R.drawable.ic_added)
+                addButton.isEnabled = false
+            } else {
+                addButton.setImageResource(R.drawable.ic_add)
+                addButton.isEnabled = true
+                addButton.setOnClickListener { onAddClick(track) }
+            }
 
             root.setOnClickListener {
                 onTrackClick(track)
             }
-            addButton.setOnClickListener { onAddClick(track) }
         }
+
     }
 
     object DiffCallback : DiffUtil.ItemCallback<Track>() {

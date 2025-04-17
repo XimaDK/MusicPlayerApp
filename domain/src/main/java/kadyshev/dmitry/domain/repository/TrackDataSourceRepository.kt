@@ -1,10 +1,11 @@
 package kadyshev.dmitry.domain.repository
 
 import kadyshev.dmitry.domain.entities.Track
+import kotlinx.coroutines.flow.Flow
 
 interface TrackDataSourceRepository {
 
     suspend fun downloadTrack(track: Track)
 
-    suspend fun getAllTracks(): List<Track>
+    fun getAllTracks(): Flow<List<Track>>
 }

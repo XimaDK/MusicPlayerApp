@@ -9,7 +9,7 @@ import org.koin.core.module.dsl.viewModel
 val appModule = module {
 
     viewModel<SearchViewModel> {
-        SearchViewModel(get(), get(), get())
+        SearchViewModel(get(), get(), get(), get())
     }
 
     single { MusicPlayerManager() }
