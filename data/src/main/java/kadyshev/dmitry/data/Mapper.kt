@@ -50,7 +50,8 @@ class Mapper {
             previewUrl = dbModel.previewUrl,
             artist = dbModel.artist,
             coverUrl = dbModel.coverUrl,
-            isDownloaded = dbModel.isDownloaded
+            isDownloaded = dbModel.isDownloaded,
+            localPath = dbModel.filePath
         )
     }
 

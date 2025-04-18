@@ -6,5 +6,6 @@ data class Track(
     val previewUrl: String,
     val artist: String,
     val coverUrl: String? = null,
-    val isDownloaded: Boolean = false
+    val isDownloaded: Boolean = false,
+    val localPath: String? = null
 )

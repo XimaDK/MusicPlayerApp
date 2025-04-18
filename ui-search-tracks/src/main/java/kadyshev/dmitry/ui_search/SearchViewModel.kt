@@ -48,7 +48,11 @@ class SearchViewModel(
     private suspend fun updateUiWithSyncedTracks(tracksFromApi: List<Track>) {
         val downloadedTracks = getAllTracksUseCase().first()
         val synced = tracksFromApi.map { track ->
-            track.copy(isDownloaded = downloadedTracks.any { it.id == track.id })
+            val local = downloadedTracks.find { it.id == track.id }
+            track.copy(
+                isDownloaded = local != null,
+                localPath = local?.localPath
+            )
         }
         _uiState.update { SearchUiState.Content(synced) }
     }
@@ -58,11 +62,20 @@ class SearchViewModel(
         viewModelScope.launch {
             try {
                 downloadTrackUseCase(track)
+
+                when (val currentState = _uiState.value) {
+                    is SearchUiState.Content -> {
+                        updateUiWithSyncedTracks(currentState.tracks)
+                    }
+                    else -> {
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("SearchViewModel", "Error saving track: $e")
             }
         }
     }
+
 
     fun onSearchQueryChanged(query: String) {
         searchJob?.cancel()

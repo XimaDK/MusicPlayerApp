@@ -18,7 +18,7 @@ class TrackApiRepositoryImpl(private val api: DeezerApi, private val mapper: Map
     override suspend fun getChart(): List<Track> {
         val response = api.getChart()
         Log.d("tracks", "response: $response")
-        return mapper.mapChartResponseDtoToDomain(response) // маппим в List<Track>
+        return mapper.mapChartResponseDtoToDomain(response)
     }
 
 }

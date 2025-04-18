@@ -48,9 +48,8 @@ class SearchFragment : BaseTracksFragment() {
             viewModel.uiState.collectLatest { state ->
                 when (state) {
                     is SearchUiState.Content -> adapter.submitList(state.tracks)
-                    is SearchUiState.Error -> { /* handle error */
+                    is SearchUiState.Error -> {
                     }
-
                     SearchUiState.Loading -> { /* show loading */
                     }
                 }

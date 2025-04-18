@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.ui_saved_tracks.databinding.FragmentSavedTracksBinding
@@ -34,13 +35,39 @@ class SavedTracksFragment : BaseTracksFragment() {
         return binding.root
     }
 
-//    override fun observeTracks() {
-//        viewLifecycleOwner.lifecycleScope.launch {
-//            viewModel.savedTracks.collectLatest {
-//                adapter.submitList(it)
-//            }
-//        }
-//    }
+    override fun setupSearch() {
+        binding.searchEditText.doAfterTextChanged {
+            viewModel.searchTracks(it.toString())
+        }
+    }
+
+    override fun observeTracks() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                when (state) {
+                    is SavedTracksUiState.Loading -> {
+//                    binding.progressBar.visibility = View.VISIBLE
+//                    binding.tracksRecyclerView.visibility = View.GONE
+//                    binding.errorText.visibility = View.GONE
+                    }
+
+                    is SavedTracksUiState.Content -> {
+//                    binding.progressBar.visibility = View.GONE
+                        binding.tracksRecyclerView.visibility = View.VISIBLE
+//                    binding.errorText.visibility = View.GONE
+                        adapter.submitList(state.tracks)
+                    }
+
+                    is SavedTracksUiState.Error -> {
+//                    binding.progressBar.visibility = View.GONE
+//                    binding.tracksRecyclerView.visibility = View.GONE
+//                    binding.errorText.visibility = View.VISIBLE
+//                    binding.errorText.text = state.message
+                    }
+                }
+            }
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()

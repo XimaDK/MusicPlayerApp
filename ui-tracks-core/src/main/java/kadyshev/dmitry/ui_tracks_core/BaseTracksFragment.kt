@@ -26,16 +26,23 @@ abstract class BaseTracksFragment : Fragment() {
 
         adapter = TracksAdapter(
             onTrackClick = { track ->
+                val source = if (track.isDownloaded && track.localPath != null) {
+                    track.localPath
+                } else {
+                    track.previewUrl
+                } ?: return@TracksAdapter
+
                 if (track.id == currentPlayingTrackId && playerManager.isPlaying()) {
                     playerManager.stop()
                     currentPlayingTrackId = null
                 } else {
-                    playerManager.play(track.previewUrl) {
+                    playerManager.play(source) {
                         currentPlayingTrackId = null
                         adapter.updatePlayingTrackId(null)
                     }
                     currentPlayingTrackId = track.id
                 }
+
                 adapter.updatePlayingTrackId(currentPlayingTrackId)
             },
             onAddClick = { track -> onAddClick(track) }
