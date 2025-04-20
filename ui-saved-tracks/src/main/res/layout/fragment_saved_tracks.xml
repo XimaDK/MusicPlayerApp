@@ -8,7 +8,7 @@
 
     <EditText
         android:id="@+id/searchEditText"
-        android:hint="Поиск сохраненных треков"
+        android:hint="@string/search_saved_tracks"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:drawableStart="@drawable/ic_search"
@@ -19,7 +19,7 @@
         android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ваши сохраненные треки:"/>
+        android:text="@string/your_saved_tracks"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tracksRecyclerView"

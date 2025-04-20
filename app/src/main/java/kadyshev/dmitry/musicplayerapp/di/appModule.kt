@@ -1,6 +1,12 @@
 package kadyshev.dmitry.musicplayerapp.di
 
+import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.core_player.MusicPlayerManager
+import kadyshev.dmitry.domain.repository.PlayerServiceInteractor
+import kadyshev.dmitry.musicplayerapp.PlayerNavigationImpl
+import kadyshev.dmitry.player_service.PlayerServiceInteractorImpl
+import kadyshev.dmitry.ui_player.PlayerServiceConnector
+import kadyshev.dmitry.ui_player.PlayerViewModel
 import kadyshev.dmitry.ui_saved_tracks.SavedTracksViewModel
 import kadyshev.dmitry.ui_search.SearchViewModel
 import org.koin.core.module.dsl.viewModel
@@ -16,6 +22,16 @@ val appModule = module {
         SavedTracksViewModel(get())
     }
 
+    viewModel<PlayerViewModel> {
+        PlayerViewModel(get())
+    }
+
+    single<PlayerNavigation> { PlayerNavigationImpl() }
+
     single { MusicPlayerManager() }
+
+    single { PlayerServiceConnector(get()) }
+
+    single<PlayerServiceInteractor> { PlayerServiceInteractorImpl(get()) }
 
 }

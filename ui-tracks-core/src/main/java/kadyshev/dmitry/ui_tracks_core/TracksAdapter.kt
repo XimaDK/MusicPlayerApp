@@ -50,7 +50,6 @@ class TracksAdapter(
 
             pauseIcon.isVisible = track.id == currentPlayingId
 
-            // Показываем галочку, если трек уже скачан
             if (track.isDownloaded) {
                 addButton.setImageResource(R.drawable.ic_added)
                 addButton.isEnabled = false

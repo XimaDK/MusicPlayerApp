@@ -20,6 +20,7 @@ abstract class BaseTracksFragment : Fragment() {
 
     open fun setupSearch() {}
     open fun observeTracks() {}
+    abstract fun onTrackSelected(track: Track, trackList: List<Track>)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -31,6 +32,9 @@ abstract class BaseTracksFragment : Fragment() {
                 } else {
                     track.previewUrl
                 } ?: return@TracksAdapter
+
+                val trackList = adapter.currentList
+                onTrackSelected(track, trackList)
 
                 if (track.id == currentPlayingTrackId && playerManager.isPlaying()) {
                     playerManager.stop()
@@ -48,10 +52,12 @@ abstract class BaseTracksFragment : Fragment() {
             onAddClick = { track -> onAddClick(track) }
         )
 
+
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         setupSearch()
         observeTracks()
+
     }
 }

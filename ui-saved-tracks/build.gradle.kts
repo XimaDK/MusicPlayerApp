@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "kadyshev.dmitry.ui_saved_tracks"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
@@ -41,6 +41,9 @@ dependencies {
     implementation(libs.koin.android)
     implementation(project(":ui-tracks-core"))
     implementation(project(":domain"))
+    implementation(project(":core-navigation"))
+    implementation(libs.kotlinx.serialization.json)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

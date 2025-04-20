@@ -19,7 +19,6 @@ class SavedTracksViewModel(
 
     private var allTracks = listOf<Track>()
 
-
     init {
         loadTracks()
     }

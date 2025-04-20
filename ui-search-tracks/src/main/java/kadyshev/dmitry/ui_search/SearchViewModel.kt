@@ -71,15 +71,13 @@ class SearchViewModel(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("SearchViewModel", "Error saving track: $e")
+                _uiState.value = SearchUiState.Error(e)
             }
         }
     }
 
-
     fun onSearchQueryChanged(query: String) {
         searchJob?.cancel()
-
         if (query.isBlank()) {
             loadChart()
             return

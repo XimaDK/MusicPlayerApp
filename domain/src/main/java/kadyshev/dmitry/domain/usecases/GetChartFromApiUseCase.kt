@@ -7,6 +7,6 @@ import kotlinx.coroutines.flow.flow
 
 class GetChartFromApiUseCase(private val repository: TrackApiRepository) {
     operator fun invoke(): Flow<List<Track>> = flow {
-        emit(repository.getChart()) // Получаем чарт из репозитория и эмитим в Flow
+        emit(repository.getChart())
     }
 }

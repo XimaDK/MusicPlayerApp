@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "kadyshev.dmitry.ui_player"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
@@ -31,13 +31,25 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
-
+    implementation(libs.coil)
+    implementation(libs.koin.android)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(project(":domain"))
+    implementation(project(":core-player"))
+    implementation(project(":core-player"))
+    implementation(project(":player-service"))
     implementation(libs.material)
+    implementation(project(":core-navigation"))
+    implementation(libs.androidx.navigation.fragment.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

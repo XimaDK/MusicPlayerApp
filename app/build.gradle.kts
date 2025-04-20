@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
-
 }
 
 android {
@@ -42,6 +41,7 @@ android {
 
 dependencies {
 
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -49,6 +49,8 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(project(":core-navigation"))
+    implementation(project(":player-service"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -57,6 +59,7 @@ dependencies {
     implementation(project(":core-player"))
     implementation(project(":ui-search-tracks"))
     implementation(project(":ui-saved-tracks"))
+    implementation(project(":ui-player"))
     implementation(project(":ui-tracks-core"))
     implementation(libs.koin.core)
     implementation(libs.androidx.room.runtime)

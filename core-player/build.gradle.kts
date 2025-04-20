@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "kadyshev.dmitry.core_player"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24

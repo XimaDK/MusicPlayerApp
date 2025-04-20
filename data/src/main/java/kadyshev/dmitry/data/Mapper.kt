@@ -14,6 +14,7 @@ class Mapper {
                 title = track.title,
                 previewUrl = track.preview,
                 artist = track.artist.name,
+                album = track.album.title,
                 coverUrl = track.album.cover
             )
         }
@@ -26,6 +27,7 @@ class Mapper {
                 title = trackDto.title,
                 previewUrl = trackDto.preview,
                 artist = trackDto.artist.name,
+                album = trackDto.album.title,
                 coverUrl = trackDto.album.cover
             )
         }
@@ -50,6 +52,7 @@ class Mapper {
             previewUrl = dbModel.previewUrl,
             artist = dbModel.artist,
             coverUrl = dbModel.coverUrl,
+            album = dbModel.album,
             isDownloaded = dbModel.isDownloaded,
             localPath = dbModel.filePath
         )

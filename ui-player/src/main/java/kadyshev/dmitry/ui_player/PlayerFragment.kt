@@ -1,59 +1,154 @@
 package kadyshev.dmitry.ui_player
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import coil.load
+import kadyshev.dmitry.domain.entities.PlayerData
+import kadyshev.dmitry.domain.entities.Track
+import kadyshev.dmitry.player_service.PlayerListener
+import kadyshev.dmitry.player_service.PlayerService
+import kadyshev.dmitry.ui_player.databinding.FragmentPlayerBinding
+import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [PlayerFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class PlayerFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private var _binding: FragmentPlayerBinding? = null
+    private val binding get() = _binding!!
+
+    // Сервис и флаг биндинга
+    private var service: PlayerService? = null
+    private var bound = false
+
+    // Начальные данные для старта (берём из аргументов)
+    private var initPlayerData: PlayerData? = null
+    private var initIndex: Int = 0
+
+    // ServiceConnection для бинда/анбинда
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+            service = (binder as PlayerService.PlayerBinder).getService()
+            bound = true
+
+            // Если это первый раз — запускаем плеер
+            initPlayerData?.let { data ->
+                service!!.start(data, initIndex)
+                initPlayerData = null
+            }
+
+            // Регистрируем коллбэки для обновления UI
+            service!!.listener = object : PlayerListener {
+                override fun onTrackChanged(track: Track, index: Int) {
+                    binding.trackName.text = track.title
+                    binding.artist.text    = track.artist
+                    binding.album.text     = track.album ?: ""
+                    binding.trackImage.load(track.coverUrl) { crossfade(true) }
+                }
+                override fun onProgressChanged(current: Int, total: Int) {
+                    binding.seekBar.max           = total
+                    binding.seekBar.progress      = current
+                    binding.currentTime.text      = formatTime(current)
+                    binding.trackDuration.text    = formatTime(total)
+                }
+                override fun onPlayStateChanged(isPlaying: Boolean) {
+                    binding.playPauseButton.setImageResource(
+                        if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+                    )
+                }
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            bound = false
+            service = null
         }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_player, container, false)
+    ): View {
+        _binding = FragmentPlayerBinding.inflate(inflater, container, false)
+        // Читаем аргумент и парсим PlayerData
+        arguments?.getString(ARGUMENTS_KEY)?.let { json ->
+            initPlayerData = Json.decodeFromString(json)
+        }
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupListeners()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Стартуем сервис (foreground) и биндимся к нему
+        val svcIntent = Intent(requireContext(), PlayerService::class.java)
+        ContextCompat.startForegroundService(requireContext(), svcIntent)
+        requireContext().bindService(svcIntent, connection, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (bound) {
+            service?.listener = null
+            requireContext().unbindService(connection)
+            bound = false
+        }
+    }
+
+    private fun setupListeners() {
+        binding.playPauseButton.setOnClickListener {
+            service?.togglePlayPause()
+        }
+        binding.nextTrackButton.setOnClickListener {
+            service?.moveToNext()
+        }
+        binding.prevTrackButton.setOnClickListener {
+            service?.moveToPrev()
+        }
+        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    // для этого требуется в PlayerService метод seekTo(position)
+//                    service?.seekTo(progress)
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) = Unit
+            override fun onStopTrackingTouch(sb: SeekBar?) = Unit
+        })
+    }
+
+    private fun formatTime(ms: Int): String {
+        val totalSeconds = ms / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format(java.util.Locale.getDefault(), "%02d:%02d", minutes, seconds)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment PlayerFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            PlayerFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        const val ARGUMENTS_KEY = "playerData"
     }
 }

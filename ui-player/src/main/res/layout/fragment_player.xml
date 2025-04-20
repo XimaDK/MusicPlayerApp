@@ -1,106 +1,113 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
-    <!-- Обложка альбома/трек -->
     <ImageView
         android:id="@+id/trackImage"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:padding="15dp"
         android:src="@color/cardview_dark_background"
         app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Название трека -->
     <TextView
         android:id="@+id/trackName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Track Name"
+        android:padding="16dp"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/trackImage"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="16dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/trackImage"
+        tools:text="Track Name" />
 
-    <!-- Название альбома и имя исполнителя -->
     <TextView
-        android:id="@+id/albumArtist"
+        android:id="@+id/artist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Album Name - Artist Name"
-        android:textSize="14sp"
+        android:padding="4dp"
         android:textColor="@android:color/darker_gray"
-        app:layout_constraintTop_toBottomOf="@id/trackName"
-        app:layout_constraintStart_toStartOf="parent"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="8dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/trackName"
+        tools:text="Artist Name" />
 
-    <!-- Прогресс воспроизведения -->
+    <TextView
+        android:id="@+id/album"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/artist"
+        tools:text="Album Name" />
+
     <SeekBar
-        android:id="@+id/progressBar"
+        android:id="@+id/seekBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/albumArtist"
-        app:layout_constraintStart_toStartOf="parent"
+        android:max="100"
         app:layout_constraintEnd_toEndOf="parent"
-        android:max="100"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/album" />
 
-    <!-- Время воспроизведения -->
     <TextView
         android:id="@+id/currentTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00:00"
-        android:textSize="12sp"
+        android:padding="8dp"
         android:textColor="@android:color/darker_gray"
-        app:layout_constraintTop_toBottomOf="@id/progressBar"
+        android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
-        android:padding="8dp"/>
+        app:layout_constraintTop_toBottomOf="@id/seekBar"
+        tools:text="00:00" />
 
-    <!-- Длительность трека -->
     <TextView
         android:id="@+id/trackDuration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00:00"
-        android:textSize="12sp"
+        android:padding="8dp"
         android:textColor="@android:color/darker_gray"
-        app:layout_constraintTop_toBottomOf="@id/progressBar"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="8dp"/>
+        app:layout_constraintTop_toBottomOf="@id/seekBar"
+        tools:text="00:00" />
 
-    <!-- Кнопки управления -->
     <LinearLayout
         android:id="@+id/controlButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/trackDuration"
-        app:layout_constraintStart_toStartOf="parent"
+        android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="16dp">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/trackDuration">
 
         <ImageButton
             android:id="@+id/prevTrackButton"
-            android:src="@drawable/ic_previous"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_previous" />
 
         <ImageButton
             android:id="@+id/playPauseButton"
-            android:src="@drawable/ic_play"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_pause" />
 
         <ImageButton
             android:id="@+id/nextTrackButton"
-            android:src="@drawable/ic_next"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_next" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

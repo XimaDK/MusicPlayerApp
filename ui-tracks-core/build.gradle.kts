@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "kadyshev.dmitry.ui_tracks_core"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24

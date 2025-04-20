@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import kadyshev.dmitry.data.dataSource.dbEntity.TrackDBModel
 
-@Database(entities = [TrackDBModel::class], version = 1, exportSchema = false)
+@Database(entities = [TrackDBModel::class], version = 2, exportSchema = false)
 abstract class AppDataBase : RoomDatabase() {
 
     abstract fun trackDao(): TrackDao
@@ -29,7 +29,8 @@ abstract class AppDataBase : RoomDatabase() {
                     application,
                     AppDataBase::class.java,
                     DB_NAME
-                ).build()
+                ).fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = db
                 return db
             }

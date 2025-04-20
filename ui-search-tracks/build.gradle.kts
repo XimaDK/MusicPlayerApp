@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "kadyshev.dmitry.ui_search"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
@@ -36,6 +36,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -44,6 +47,7 @@ dependencies {
     implementation(project(":ui-tracks-core"))
     implementation(project(":domain"))
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(project(":core-navigation"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

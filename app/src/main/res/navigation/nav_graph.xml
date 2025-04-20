@@ -11,6 +11,11 @@
         android:name="kadyshev.dmitry.ui_search.SearchFragment"
         android:label="searchTrackFragment"
         tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_search_to_player"
+            app:destination="@id/playerFragment"
+            app:popUpToInclusive="false"
+            app:launchSingleTop="true" />
 
     </fragment>
 
@@ -20,6 +25,19 @@
         android:label="savedFragment"
         tools:layout="@layout/fragment_saved_tracks">
 
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/playerFragment"
+        android:name="kadyshev.dmitry.ui_player.PlayerFragment"
+        android:label="playerFragment"
+        tools:layout="@layout/fragment_player">
+
+
+        <argument
+            android:name="playerData"
+            app:argType="string" />
     </fragment>
 
 </navigation>

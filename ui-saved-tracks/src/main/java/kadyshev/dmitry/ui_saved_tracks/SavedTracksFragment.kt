@@ -6,11 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
+import kadyshev.dmitry.core_navigtaion.PlayerNavigation
+import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.ui_saved_tracks.databinding.FragmentSavedTracksBinding
 import kadyshev.dmitry.ui_tracks_core.BaseTracksFragment
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlinx.serialization.encodeToString
 
 
 class SavedTracksFragment : BaseTracksFragment() {
@@ -22,6 +27,8 @@ class SavedTracksFragment : BaseTracksFragment() {
     private val viewModel: SavedTracksViewModel by viewModel()
 
     override val recyclerView get() = binding.tracksRecyclerView
+
+    private val playerNavigation: PlayerNavigation by inject()
 
     override fun onAddClick(track: Track) {
         //потом переделать под удалить/добавить
@@ -67,6 +74,15 @@ class SavedTracksFragment : BaseTracksFragment() {
                 }
             }
         }
+    }
+
+    override fun onTrackSelected(track: Track, trackList: List<Track>) {
+        val index = trackList.indexOfFirst { it.id == track.id }
+        val playerData = PlayerData(trackList, index)
+
+        val playerDataJson = Json.encodeToString(playerData)
+
+        playerNavigation.openPlayer(this, playerDataJson)
     }
 
     override fun onDestroy() {
