@@ -5,19 +5,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import kadyshev.dmitry.core_player.MusicPlayerManager
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 
@@ -52,29 +48,24 @@ class PlayerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let { i ->
-            // 1) Если пришли данные первого запуска — стартуем плей
             i.getStringExtra("playerData")?.let { json ->
                 val data = Json.decodeFromString<PlayerData>(json)
                 val index = i.getIntExtra("startIndex", 0)
-                start(data, index)
+                start(data, index) // Уведомление создастся внутри playCurrent()
             }
-            // 2) Всегда обрабатываем action из уведомления
-            when (i.action) {
-                ACTION_TOGGLE -> togglePlayPause()
-                ACTION_NEXT   -> moveToNext()
-                ACTION_PREV   -> moveToPrev()
+
+            i.action?.let { action ->
+                when (action) {
+                    ACTION_TOGGLE -> togglePlayPause()
+                    ACTION_NEXT -> moveToNext()
+                    ACTION_PREV -> moveToPrev()
+                    ACTION_REWIND_10 -> rewindBy10Seconds()
+                    ACTION_FORWARD_10 -> forwardBy10Seconds()
+                }
             }
         }
-
-        // Немедленно переводим сервис в фоновый режим, вызвав startForeground
-        playerData?.tracks?.get(currentIndex)?.let { track ->
-            startForeground(NOTIF_ID, createNotification(track))
-        }
-
         return START_STICKY
     }
-
-
 
     fun start(playerData: PlayerData, startIndex: Int) {
         this.playerData = playerData
@@ -85,31 +76,57 @@ class PlayerService : Service() {
     private fun playCurrent() {
         val track = playerData?.tracks?.get(currentIndex) ?: return
 
-        // говорим, что трек поменялся
         listener?.onTrackChanged(track, currentIndex)
+
+        // Сразу показываем состояние "playing" в уведомлении
+        startForeground(NOTIF_ID, createNotification(track, true))
 
         musicPlayerManager.play(track.getPlayablePath()) {
             moveToNext()
         }
         listener?.onPlayStateChanged(true)
-        startForeground(NOTIF_ID, createNotification(track))
     }
 
     fun togglePlayPause() {
-        if (musicPlayerManager.isPlaying()) {
-            musicPlayerManager.pause()
-            listener?.onPlayStateChanged(false)
-        } else {
+        val willPlay = !musicPlayerManager.isPlaying()
+
+        // Сразу обновляем состояние визуально
+        updateNotificationState(willPlay)
+
+        // Затем выполняем действие
+        if (willPlay) {
             musicPlayerManager.resume()
-            listener?.onPlayStateChanged(true)
+        } else {
+            musicPlayerManager.pause()
         }
-        updateNotification()
+
+        listener?.onPlayStateChanged(willPlay)
+    }
+
+    private fun rewindBy10Seconds() {
+        val currentPosition = musicPlayerManager.currentPosition
+        val newPosition = (currentPosition - 10000).coerceAtLeast(0)
+        musicPlayerManager.seekTo(newPosition)
+        updateNotificationState(musicPlayerManager.isPlaying())
+    }
+
+    private fun forwardBy10Seconds() {
+        val currentPosition = musicPlayerManager.currentPosition
+        val newPosition = (currentPosition + 10000).coerceAtMost(musicPlayerManager.duration)
+        musicPlayerManager.seekTo(newPosition)
+        updateNotificationState(musicPlayerManager.isPlaying())
+    }
+
+    private fun updateNotificationState(isPlaying: Boolean) {
+        playerData?.tracks?.get(currentIndex)?.let { track ->
+            notificationManager.notify(NOTIF_ID, createNotification(track, isPlaying))
+        }
     }
 
     fun moveToNext() {
         if (currentIndex + 1 < (playerData?.tracks?.size ?: 0)) {
             currentIndex++
-            playCurrent()   // вызовет onTrackChanged + onPlayStateChanged(true)
+            playCurrent()
         }
     }
 
@@ -120,51 +137,70 @@ class PlayerService : Service() {
         }
     }
 
-    private fun createNotification(track: Track): Notification {
-        // Intents на внешний NotificationReceiver
-        val playPauseIntent = Intent(this, NotificationReceiver::class.java).apply {
-            action = ACTION_TOGGLE
+    fun seekTo(position: Int) {
+        musicPlayerManager.seekTo(position)
+        playerData?.tracks?.get(currentIndex)?.let { track ->
+            notificationManager.notify(
+                NOTIF_ID,
+                createNotification(track, musicPlayerManager.isPlaying())
+            )
         }
-        val nextIntent = Intent(this, NotificationReceiver::class.java).apply {
-            action = ACTION_NEXT
-        }
-        val prevIntent = Intent(this, NotificationReceiver::class.java).apply {
-            action = ACTION_PREV
-        }
+    }
 
-        val pendingPlayPause = PendingIntent.getBroadcast(
-            this, 0, playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val pendingNext = PendingIntent.getBroadcast(
-            this, 1, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val pendingPrev = PendingIntent.getBroadcast(
-            this, 2, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT
-        )
+
+    private fun createNotification(track: Track, isPlaying: Boolean? = null): Notification {
+        val actualIsPlaying = isPlaying ?: musicPlayerManager.isPlaying()
+        val remoteViews = RemoteViews(this.packageName, R.layout.notification_player)
+
+        remoteViews.apply {
+            setTextViewText(R.id.notification_title, track.title)
+            setTextViewText(R.id.notification_artist, track.artist)
+
+            setImageViewResource(
+                R.id.notification_play_pause,
+                if (actualIsPlaying) R.drawable.ic_pause else R.drawable.ic_play
+            )
+
+            // Добавляем обработчики для новых кнопок перемотки
+            setOnClickPendingIntent(R.id.notification_prev, createPendingIntent(ACTION_PREV))
+            setOnClickPendingIntent(
+                R.id.notification_play_pause,
+                createPendingIntent(ACTION_TOGGLE)
+            )
+            setOnClickPendingIntent(R.id.notification_next, createPendingIntent(ACTION_NEXT))
+            setOnClickPendingIntent(
+                R.id.notification_rewind_10,
+                createPendingIntent(ACTION_REWIND_10)
+            )
+            setOnClickPendingIntent(
+                R.id.notification_forward_10,
+                createPendingIntent(ACTION_FORWARD_10)
+            )
+
+        }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(track.title)
-            .setContentText(track.artist)
             .setSmallIcon(R.drawable.ic_note)
-            .addAction(R.drawable.ic_previous, "Prev", pendingPrev)
-            .addAction(
-                if (musicPlayerManager.isPlaying()) R.drawable.ic_pause else R.drawable.ic_play,
-                "Play/Pause",
-                pendingPlayPause
-            )
-            .addAction(R.drawable.ic_next, "Next", pendingNext)
-            .setStyle(androidx.media.app.NotificationCompat.MediaStyle())
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomContentView(remoteViews)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
             .build()
     }
 
 
-    private fun updateNotification() {
-        playerData?.tracks?.get(currentIndex)?.let {
-            notificationManager.notify(NOTIF_ID, createNotification(it))
+    private fun createPendingIntent(action: String): PendingIntent {
+        val intent = Intent(this, NotificationReceiver::class.java).apply {
+            this.action = action
         }
+        return PendingIntent.getBroadcast(
+            this,
+            action.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
+
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -185,6 +221,8 @@ class PlayerService : Service() {
         private const val CHANNEL_ID = "music_channel"
         private const val NOTIF_ID = 1
 
+        private const val ACTION_REWIND_10 = "ACTION_REWIND_10"
+        private const val ACTION_FORWARD_10 = "ACTION_FORWARD_10"
         const val ACTION_TOGGLE = "ACTION_TOGGLE"
         const val ACTION_NEXT = "ACTION_NEXT"
         const val ACTION_PREV = "ACTION_PREV"

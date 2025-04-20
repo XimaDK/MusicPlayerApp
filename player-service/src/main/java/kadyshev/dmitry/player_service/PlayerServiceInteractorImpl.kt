@@ -22,6 +22,6 @@ class PlayerServiceInteractorImpl(private val context: Context) : PlayerServiceI
         val intent = Intent(context, PlayerService::class.java).apply {
             this.action = action
         }
-        context.sendBroadcast(intent)
+        ContextCompat.startForegroundService(context, intent)
     }
 }

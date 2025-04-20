@@ -12,65 +12,58 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import coil.load
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.player_service.PlayerListener
 import kadyshev.dmitry.player_service.PlayerService
 import kadyshev.dmitry.ui_player.databinding.FragmentPlayerBinding
-import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PlayerFragment : Fragment() {
 
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
 
-    // Сервис и флаг биндинга
     private var service: PlayerService? = null
     private var bound = false
 
-    // Начальные данные для старта (берём из аргументов)
     private var initPlayerData: PlayerData? = null
     private var initIndex: Int = 0
+    private var isSeeking = false
 
-    // ServiceConnection для бинда/анбинда
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             service = (binder as PlayerService.PlayerBinder).getService()
             bound = true
 
-            // Если это первый раз — запускаем плеер
-            initPlayerData?.let { data ->
-                service!!.start(data, initIndex)
-                initPlayerData = null
-            }
-
             // Регистрируем коллбэки для обновления UI
             service!!.listener = object : PlayerListener {
                 override fun onTrackChanged(track: Track, index: Int) {
                     binding.trackName.text = track.title
-                    binding.artist.text    = track.artist
-                    binding.album.text     = track.album ?: ""
+                    binding.artist.text = track.artist
+                    binding.album.text = track.album ?: ""
                     binding.trackImage.load(track.coverUrl) { crossfade(true) }
                 }
+
                 override fun onProgressChanged(current: Int, total: Int) {
-                    binding.seekBar.max           = total
-                    binding.seekBar.progress      = current
-                    binding.currentTime.text      = formatTime(current)
-                    binding.trackDuration.text    = formatTime(total)
+                    if (!isSeeking) {
+                        binding.seekBar.max = total
+                        binding.seekBar.progress = current
+                        binding.currentTime.text = formatTime(current)
+                        binding.trackDuration.text = formatTime(total)
+                    }
                 }
+
                 override fun onPlayStateChanged(isPlaying: Boolean) {
                     binding.playPauseButton.setImageResource(
                         if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
                     )
                 }
+            }
+            initPlayerData?.let { data ->
+                service!!.start(data, initIndex)
+                initPlayerData = null
             }
         }
 
@@ -85,9 +78,9 @@ class PlayerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPlayerBinding.inflate(inflater, container, false)
-        // Читаем аргумент и парсим PlayerData
         arguments?.getString(ARGUMENTS_KEY)?.let { json ->
-            initPlayerData = Json.decodeFromString(json)
+            initPlayerData = Json.decodeFromString<PlayerData>(json)
+            initIndex = initPlayerData?.currentIndex ?: 0
         }
         return binding.root
     }
@@ -127,12 +120,20 @@ class PlayerFragment : Fragment() {
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    // для этого требуется в PlayerService метод seekTo(position)
-//                    service?.seekTo(progress)
+                    binding.currentTime.text = formatTime(progress)
                 }
             }
-            override fun onStartTrackingTouch(sb: SeekBar?) = Unit
-            override fun onStopTrackingTouch(sb: SeekBar?) = Unit
+
+            override fun onStartTrackingTouch(sb: SeekBar?) {
+                isSeeking = true
+            }
+
+            override fun onStopTrackingTouch(sb: SeekBar?) {
+                sb?.let {
+                    service?.seekTo(it.progress)
+                }
+                isSeeking = false
+            }
         })
     }
 

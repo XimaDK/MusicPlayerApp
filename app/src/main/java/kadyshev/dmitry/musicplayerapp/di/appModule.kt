@@ -9,6 +9,7 @@ import kadyshev.dmitry.ui_player.PlayerServiceConnector
 import kadyshev.dmitry.ui_player.PlayerViewModel
 import kadyshev.dmitry.ui_saved_tracks.SavedTracksViewModel
 import kadyshev.dmitry.ui_search.SearchViewModel
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -30,7 +31,9 @@ val appModule = module {
 
     single { MusicPlayerManager() }
 
-    single { PlayerServiceConnector(get()) }
+    single { PlayerServiceConnector(androidContext()) }
+
+
 
     single<PlayerServiceInteractor> { PlayerServiceInteractorImpl(get()) }
 

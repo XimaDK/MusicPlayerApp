@@ -20,6 +20,18 @@ class MusicPlayerManager {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
+    // In MusicPlayerManager class
+    var currentPosition: Int
+        get() = mediaPlayer?.currentPosition ?: 0
+        set(value) {
+            mediaPlayer?.seekTo(value)
+        }
+
+    var duration: Int
+        get() = mediaPlayer?.duration ?: 0
+        set(value) {}
+
+
     fun play(previewUrl: String, onCompletion: () -> Unit = {}) {
         stop()
 
@@ -83,6 +95,7 @@ class MusicPlayerManager {
             }
         }
     }
+
 
     private fun stopProgressUpdates() {
         progressJob?.cancel()
