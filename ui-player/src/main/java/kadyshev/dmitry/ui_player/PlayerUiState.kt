@@ -7,7 +7,9 @@ sealed class PlayerUiState {
     data class Content(
         val playerData: PlayerData,
         val currentIndex: Int,
-        val isPlaying: Boolean
+        val isPlaying: Boolean,
+        val currentProgress: Int,
+        val trackDuration: Int
     ) : PlayerUiState()
     data object Error : PlayerUiState()
 }

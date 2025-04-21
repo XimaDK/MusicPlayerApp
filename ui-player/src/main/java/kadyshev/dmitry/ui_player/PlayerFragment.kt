@@ -1,20 +1,22 @@
 package kadyshev.dmitry.ui_player
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil.load
+import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.ui_player.databinding.FragmentPlayerBinding
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.Locale
 
@@ -24,12 +26,15 @@ class PlayerFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: PlayerViewModel by viewModel()
+    private val playerNavigation: PlayerNavigation by inject()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPlayerBinding.inflate(inflater, container, false)
+
+
         return binding.root
     }
 
@@ -42,7 +47,7 @@ class PlayerFragment : Fragment() {
         viewModel.startPlayer()
 
         setupListeners()
-        observeViewModel()
+        observeUiState()
     }
 
     private fun setupListeners() = with(binding) {
@@ -78,46 +83,48 @@ class PlayerFragment : Fragment() {
         })
     }
 
-    private fun observeViewModel() {
+    private fun observeUiState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.currentTrack.collect { track ->
-                        Log.d("TRACK", track.toString())
-                        track?.let {
-                            binding.trackName.text = it.title
-                            binding.artist.text = it.artist
-                            binding.trackImage.load(it.coverUrl)
-                            binding.album.text = it.album
-
+                viewModel.uiState.collect { state ->
+                    when (state) {
+                        is PlayerUiState.Loading -> {
+                            binding.loadingOverlay.visibility = View.VISIBLE
+                            binding.errorText.visibility = View.GONE
                         }
-                    }
-                }
-                launch {
-                    viewModel.trackDuration.collect { duration ->
-                        Log.d("duration", duration.toString())
-                        if (duration > 0) {
-                            binding.trackDuration.text = formatMillis(duration)
-                            binding.seekBar.max = duration
-                        }
-                    }
-                }
-                launch {
-                    viewModel.currentProgress.collect { progress ->
-                        binding.seekBar.progress = progress
-                        binding.currentTime.text = formatMillis(progress)
-                    }
-                }
 
-                launch {
-                    viewModel.isPlaying.collect { isPlaying ->
-                        binding.playPauseButton.setImageResource(
-                            if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
-                        )
+                        is PlayerUiState.Error -> {
+                            binding.loadingOverlay.visibility = View.GONE
+                            binding.errorText.visibility = View.VISIBLE
+                        }
+
+                        is PlayerUiState.Content -> {
+                            binding.loadingOverlay.visibility = View.GONE
+                            binding.errorText.visibility = View.GONE
+                            renderContent(state)
+                        }
                     }
                 }
             }
         }
+    }
+
+    private fun renderContent(state: PlayerUiState.Content) = with(binding) {
+        val track = state.playerData.tracks[state.currentIndex]
+
+        trackName.text = track.title
+        artist.text = track.artist
+        album.text = track.album
+        trackImage.load(track.coverUrl)
+
+        playPauseButton.setImageResource(
+            if (state.isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+        )
+
+        seekBar.max = state.trackDuration
+        seekBar.progress = state.currentProgress
+        trackDuration.text = formatMillis(state.trackDuration)
+        currentTime.text = formatMillis(state.currentProgress)
     }
 
     override fun onDestroyView() {

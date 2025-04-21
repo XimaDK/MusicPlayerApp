@@ -1,3 +1,4 @@
 <resources>
 
+    <string name="error_message">Ошибка загрузки</string>
 </resources>

@@ -1,7 +1,5 @@
 package kadyshev.dmitry.ui_player
 
-import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
@@ -13,19 +11,14 @@ class PlayerViewModel(
     private val playerServiceConnector: PlayerServiceConnector
 ) : ViewModel(), PlayerListener {
 
-    private val _currentTrack = MutableStateFlow<Track?>(null)
-    val currentTrack: StateFlow<Track?> = _currentTrack
-
-    private val _trackDuration = MutableStateFlow(0)
-    val trackDuration: StateFlow<Int> = _trackDuration
-
-    private val _currentProgress = MutableStateFlow(0)
-    val currentProgress: StateFlow<Int> = _currentProgress
-
-    private val _isPlaying = MutableStateFlow(false)
-    val isPlaying: StateFlow<Boolean> = _isPlaying
+    private val _uiState = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
+    val uiState: StateFlow<PlayerUiState> = _uiState
 
     private var playerData: PlayerData? = null
+    private var currentIndex: Int = 0
+    private var isPlaying: Boolean = false
+    private var currentTrackDuration: Int = 0
+    private var currentProgress: Int = 0
 
     init {
         playerServiceConnector.setListener(this)
@@ -33,11 +26,14 @@ class PlayerViewModel(
 
     fun setPlayerData(data: PlayerData) {
         playerData = data
+        _uiState.value = PlayerUiState.Loading
     }
 
     fun startPlayer() {
         playerData?.let {
             playerServiceConnector.startPlayer(it, it.currentIndex)
+        } ?: run {
+            _uiState.value = PlayerUiState.Error
         }
     }
 
@@ -61,21 +57,35 @@ class PlayerViewModel(
         playerServiceConnector.seekTo(position)
     }
 
-    override fun onTrackChanged(track: Track, index: Int) {
-        _currentTrack.value = track
-        _trackDuration.value = playerServiceConnector.getCurrentTrackDuration()
+    private fun updateUiState() {
+        val data = playerData ?: return
+        _uiState.value = PlayerUiState.Content(
+            playerData = data,
+            currentIndex = currentIndex,
+            isPlaying = isPlaying,
+            currentProgress = currentProgress,
+            trackDuration = currentTrackDuration
+        )
+    }
 
+    override fun onTrackChanged(track: Track, index: Int) {
+        currentIndex = index
+        currentTrackDuration = playerServiceConnector.getCurrentTrackDuration()
+        updateUiState()
     }
 
     override fun onProgressChanged(current: Int, total: Int) {
-        _currentProgress.value = current
+        currentProgress = current
+        updateUiState()
     }
 
     override fun onPlayStateChanged(isPlaying: Boolean) {
-        _isPlaying.value = isPlaying
+        this.isPlaying = isPlaying
+        updateUiState()
     }
 
     override fun onTrackDurationReceived(duration: Int) {
-        _trackDuration.value = duration
+        currentTrackDuration = duration
+        updateUiState()
     }
 }

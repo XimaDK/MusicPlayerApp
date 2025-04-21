@@ -58,6 +58,9 @@ class TracksAdapter(
                 onAddClick(track)
             }
 
+            root.setOnClickListener {
+                onTrackClick(track)
+            }
         }
 
     }
