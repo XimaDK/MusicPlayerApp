@@ -20,6 +20,7 @@ abstract class BaseTracksFragment : Fragment() {
 
     open fun setupSearch() {}
     open fun observeTracks() {}
+    open fun setupRefreshLayout() {}
     abstract fun onTrackSelected(track: Track, trackList: List<Track>)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,6 +59,7 @@ abstract class BaseTracksFragment : Fragment() {
 
         setupSearch()
         observeTracks()
+        setupRefreshLayout()
 
     }
 }

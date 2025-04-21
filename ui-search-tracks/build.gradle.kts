@@ -48,6 +48,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(project(":core-navigation"))
+    implementation(libs.androidx.swiperefreshlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

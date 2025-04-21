@@ -15,8 +15,6 @@ import androidx.core.app.NotificationCompat
 import kadyshev.dmitry.core_player.MusicPlayerManager
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import org.koin.android.ext.android.inject
 
 class PlayerService : Service() {
@@ -71,24 +69,6 @@ class PlayerService : Service() {
         return START_STICKY
     }
 
-
-    fun notifyCurrentState() {
-        val track = playerData?.tracks?.getOrNull(currentIndex)
-        Log.d("PlayerService", track.toString())
-
-        if (track != null) {
-            listener?.onTrackChanged(track, currentIndex)
-        }
-
-        listener?.onProgressChanged(
-            musicPlayerManager.currentPosition,
-            musicPlayerManager.getDuration()
-        )
-
-        listener?.onPlayStateChanged(musicPlayerManager.isPlaying())
-    }
-
-
     fun start(playerData: PlayerData, startIndex: Int) {
         this.playerData = playerData
         currentIndex = startIndex
@@ -102,7 +82,7 @@ class PlayerService : Service() {
 
         startForeground(NOTIF_ID, createNotification(track, true))
 
-        musicPlayerManager.play(track.getPlayablePath()){
+        musicPlayerManager.play(track.getPlayablePath()) {
             moveToNext()
         }
         listener?.onPlayStateChanged(true)

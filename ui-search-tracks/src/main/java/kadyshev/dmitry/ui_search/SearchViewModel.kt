@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kadyshev.dmitry.domain.entities.Track
+import kadyshev.dmitry.domain.usecases.DeleteTrackUseCase
 import kadyshev.dmitry.domain.usecases.DownloadTrackUseCase
 import kadyshev.dmitry.domain.usecases.GetAllTracksUseCase
 import kadyshev.dmitry.domain.usecases.GetChartFromApiUseCase
@@ -19,11 +20,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kadyshev.dmitry.ui_tracks_core.mapErrorToMessage
 
 class SearchViewModel(
     private val searchTracksFromApiUseCase: SearchTracksFromApiUseCase,
     private val getChartFromApiUseCase: GetChartFromApiUseCase,
     private val downloadTrackUseCase: DownloadTrackUseCase,
+    private val deleteTrackUseCase: DeleteTrackUseCase,
     private val getAllTracksUseCase: GetAllTracksUseCase
     ) : ViewModel() {
 
@@ -31,6 +34,8 @@ class SearchViewModel(
     val uiState = _uiState.asStateFlow()
 
     private var searchJob: Job? = null
+
+    private var currentQuery: String = ""
 
     init {
         loadChart()
@@ -40,7 +45,7 @@ class SearchViewModel(
         getChartFromApiUseCase()
             .onStart { _uiState.value = SearchUiState.Loading }
             .onEach { tracks -> updateUiWithSyncedTracks(tracks) }
-            .catch { error -> _uiState.value = SearchUiState.Error(error) }
+            .catch { error -> _uiState.value = SearchUiState.Error(mapErrorToMessage(error)) }
             .launchIn(viewModelScope)
     }
 
@@ -57,27 +62,40 @@ class SearchViewModel(
         _uiState.update { SearchUiState.Content(synced) }
     }
 
+    fun refresh() {
+        if (currentQuery.isBlank()) {
+            loadChart()
+        } else {
+            onSearchQueryChanged(currentQuery)
+        }
+    }
 
-    fun saveTrack(track: Track) {
+    fun toggleTrackDownload(track: Track) {
         viewModelScope.launch {
             try {
-                downloadTrackUseCase(track)
+                if (track.isDownloaded) {
+                    deleteTrackUseCase(track.id)
+                } else {
+                    downloadTrackUseCase(track)
+                }
 
                 when (val currentState = _uiState.value) {
                     is SearchUiState.Content -> {
                         updateUiWithSyncedTracks(currentState.tracks)
                     }
-                    else -> {
-                    }
+                    else -> Unit
                 }
             } catch (e: Exception) {
-                _uiState.value = SearchUiState.Error(e)
+                _uiState.value = SearchUiState.Error(mapErrorToMessage(e))
             }
         }
     }
 
+
     fun onSearchQueryChanged(query: String) {
+        currentQuery = query
         searchJob?.cancel()
+
         if (query.isBlank()) {
             loadChart()
             return
@@ -90,7 +108,7 @@ class SearchViewModel(
                     updateUiWithSyncedTracks(tracks)
                 }
             } catch (e: Exception) {
-                _uiState.update { SearchUiState.Error(e) }
+                _uiState.update { SearchUiState.Error(mapErrorToMessage(e)) }
             }
         }
     }

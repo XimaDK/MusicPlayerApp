@@ -38,8 +38,6 @@ class PlayerServiceConnector(
                 service?.start(playerData, index)
                 pendingStartData = null
             }
-
-            service?.notifyCurrentState()
         }
 
 

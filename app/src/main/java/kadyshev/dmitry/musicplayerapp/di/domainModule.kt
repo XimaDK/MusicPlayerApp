@@ -1,5 +1,6 @@
 package kadyshev.dmitry.musicplayerapp.di
 
+import kadyshev.dmitry.domain.usecases.DeleteTrackUseCase
 import kadyshev.dmitry.domain.usecases.DownloadTrackUseCase
 import kadyshev.dmitry.domain.usecases.GetAllTracksUseCase
 import kadyshev.dmitry.domain.usecases.GetChartFromApiUseCase
@@ -14,6 +15,10 @@ val domainModule = module {
 
     factory {
         GetChartFromApiUseCase(get())
+    }
+
+    factory {
+        DeleteTrackUseCase(get())
     }
 
     factory {

@@ -50,18 +50,14 @@ class TracksAdapter(
 
             pauseIcon.isVisible = track.id == currentPlayingId
 
-            if (track.isDownloaded) {
-                addButton.setImageResource(R.drawable.ic_added)
-                addButton.isEnabled = false
-            } else {
-                addButton.setImageResource(R.drawable.ic_add)
-                addButton.isEnabled = true
-                addButton.setOnClickListener { onAddClick(track) }
+            addButton.setImageResource(
+                if (track.isDownloaded) R.drawable.ic_added else R.drawable.ic_add
+            )
+
+            addButton.setOnClickListener {
+                onAddClick(track)
             }
 
-            root.setOnClickListener {
-                onTrackClick(track)
-            }
         }
 
     }

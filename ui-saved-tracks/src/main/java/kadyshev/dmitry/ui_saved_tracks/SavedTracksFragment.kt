@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
@@ -11,11 +12,12 @@ import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.ui_saved_tracks.databinding.FragmentSavedTracksBinding
 import kadyshev.dmitry.ui_tracks_core.BaseTracksFragment
+import kadyshev.dmitry.ui_tracks_core.showToast
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlinx.serialization.encodeToString
 
 
 class SavedTracksFragment : BaseTracksFragment() {
@@ -31,9 +33,8 @@ class SavedTracksFragment : BaseTracksFragment() {
     private val playerNavigation: PlayerNavigation by inject()
 
     override fun onAddClick(track: Track) {
-        //потом переделать под удалить/добавить
+        viewModel.toggleTrackDownload(track)
     }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,29 +49,30 @@ class SavedTracksFragment : BaseTracksFragment() {
         }
     }
 
+    override fun setupRefreshLayout() {
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.refresh()
+        }
+    }
+
     override fun observeTracks() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.uiState.collect { state ->
+                binding.swipeRefresh.isRefreshing = false
                 when (state) {
                     is SavedTracksUiState.Loading -> {
-//                    binding.progressBar.visibility = View.VISIBLE
-//                    binding.tracksRecyclerView.visibility = View.GONE
-//                    binding.errorText.visibility = View.GONE
+                        binding.swipeRefresh.isRefreshing = true
                     }
 
                     is SavedTracksUiState.Content -> {
-//                    binding.progressBar.visibility = View.GONE
+                        binding.swipeRefresh.isRefreshing = false
                         binding.tracksRecyclerView.visibility = View.VISIBLE
-//                    binding.errorText.visibility = View.GONE
                         adapter.submitList(state.tracks)
                     }
 
                     is SavedTracksUiState.Error -> {
-//                    binding.progressBar.visibility = View.GONE
-//                    binding.tracksRecyclerView.visibility = View.GONE
-//                    binding.errorText.visibility = View.VISIBLE
-//                    binding.errorText.text = state.message
-                    }
+                        binding.tracksRecyclerView.visibility = View.GONE
+                        showToast(requireContext(), state.message)                    }
                 }
             }
         }

@@ -1,6 +1,5 @@
 package kadyshev.dmitry.musicplayerapp.di
 
-import android.content.Context
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.core_player.MusicPlayerManager
 import kadyshev.dmitry.domain.repository.PlayerServiceInteractor
@@ -17,14 +16,14 @@ import org.koin.dsl.module
 val appModule = module {
 
     viewModel<SearchViewModel> {
-        SearchViewModel(get(), get(), get(), get())
+        SearchViewModel(get(), get(), get(), get(), get())
     }
 
     viewModel<SavedTracksViewModel> {
-        SavedTracksViewModel(get())
+        SavedTracksViewModel(get(), get(), get())
     }
 
-    viewModel<PlayerViewModel>{
+    viewModel<PlayerViewModel> {
         PlayerViewModel(get())
     }
 

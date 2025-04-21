@@ -14,12 +14,12 @@ interface TrackDao {
     suspend fun insertTrack(track: TrackDBModel)
 
     @Query("SELECT * FROM tracks WHERE id = :id")
-    suspend fun getTrackById(id: Int): TrackDBModel?
+    suspend fun getTrackById(id: Long): TrackDBModel?
 
     @Query("SELECT * FROM tracks")
     fun getAllTracks(): Flow<List<TrackDBModel>>
 
     @Query("DELETE FROM tracks WHERE id = :id")
-    suspend fun deleteTrack(id: Int)
+    suspend fun deleteTrack(id: Long)
 
 }

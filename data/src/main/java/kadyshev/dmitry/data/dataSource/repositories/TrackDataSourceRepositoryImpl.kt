@@ -50,4 +50,21 @@ class TrackDataSourceRepositoryImpl(
         return trackDao.getAllTracks()
             .map { entities -> entities.map { mapper.mapTrackDbModelToEntity(it) } }
     }
+
+    override suspend fun deleteTrackById(id: Long) {
+        withContext(Dispatchers.IO) {
+            val trackDbModel = trackDao.getTrackById(id)
+            trackDbModel?.let {
+                // Удаление файла, если он существует
+                val file = File(it.filePath)
+                if (file.exists()) {
+                    file.delete()
+                }
+
+                // Удаление из базы данных
+                trackDao.deleteTrack(id)
+            }
+        }
+    }
+
 }
