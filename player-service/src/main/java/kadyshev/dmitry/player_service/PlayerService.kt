@@ -24,6 +24,7 @@ class PlayerService : Service() {
     private val musicPlayerManager: MusicPlayerManager by inject()
 
     private var playerData: PlayerData? = null
+
     private var currentIndex: Int = 0
 
     private val notificationManager by lazy { getSystemService(NOTIFICATION_SERVICE) as NotificationManager }
@@ -53,7 +54,6 @@ class PlayerService : Service() {
             onPlayerReady?.invoke(duration)
 
         }
-
     }
 
     override fun onBind(intent: Intent?): IBinder = binder
@@ -100,7 +100,6 @@ class PlayerService : Service() {
         }
 
         listener?.onPlayStateChanged(willPlay)
-
     }
 
     private fun rewindBy10Seconds() {
@@ -120,7 +119,6 @@ class PlayerService : Service() {
     private fun updateNotificationState(isPlaying: Boolean) {
         playerData?.tracks?.get(currentIndex)?.let { track ->
             Log.d("PlayerService", "Updating notification for track: ${track.title}")
-
             notificationManager.notify(NOTIF_ID, createNotification(track, isPlaying))
         }
     }
@@ -168,7 +166,6 @@ class PlayerService : Service() {
                 if (actualIsPlaying) R.drawable.ic_pause else R.drawable.ic_play
             )
 
-            // Добавляем обработчики для новых кнопок перемотки
             setOnClickPendingIntent(R.id.notification_prev, createPendingIntent(ACTION_PREV))
             setOnClickPendingIntent(
                 R.id.notification_play_pause,
@@ -227,7 +224,6 @@ class PlayerService : Service() {
     companion object {
         private const val CHANNEL_ID = "music_channel"
         private const val NOTIF_ID = 1
-
         private const val ACTION_REWIND_10 = "ACTION_REWIND_10"
         private const val ACTION_FORWARD_10 = "ACTION_FORWARD_10"
         const val ACTION_TOGGLE = "ACTION_TOGGLE"

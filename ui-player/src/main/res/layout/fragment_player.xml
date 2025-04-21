@@ -4,12 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <ImageView
         android:id="@+id/trackImage"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="15dp"
-        android:src="@color/cardview_dark_background"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -66,10 +66,10 @@
         android:layout_height="0dp"
         android:background="#80000000"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="@id/trackImage"
         app:layout_constraintBottom_toBottomOf="@id/trackImage"
+        app:layout_constraintEnd_toEndOf="@id/trackImage"
         app:layout_constraintStart_toStartOf="@id/trackImage"
-        app:layout_constraintEnd_toEndOf="@id/trackImage">
+        app:layout_constraintTop_toTopOf="@id/trackImage">
 
         <ProgressBar
             android:id="@+id/loadingIndicator"
@@ -138,9 +138,18 @@
         android:text="@string/error_message"
         android:textSize="14sp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/controlButtons"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/controlButtons" />
+
+    <ImageButton
+        android:id="@+id/backButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="12dp"
+        android:src="@drawable/ic_arrow_back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

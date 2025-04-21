@@ -14,8 +14,10 @@ class PlayerNavigationImpl : PlayerNavigation {
             bundle,
             NavOptions.Builder()
                 .setLaunchSingleTop(true)
-                .setPopUpTo(R.id.nav_graph, false)
                 .build()
         )
+    }
+    override fun popBackFromPlayer(fragment: Fragment) {
+        fragment.findNavController().popBackStack()
     }
 }

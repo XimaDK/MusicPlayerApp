@@ -53,7 +53,6 @@ abstract class BaseTracksFragment : Fragment() {
             onAddClick = { track -> onAddClick(track) }
         )
 
-
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 

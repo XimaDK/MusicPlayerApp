@@ -1,6 +1,5 @@
 package kadyshev.dmitry.ui_search
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kadyshev.dmitry.domain.entities.Track
@@ -9,6 +8,7 @@ import kadyshev.dmitry.domain.usecases.DownloadTrackUseCase
 import kadyshev.dmitry.domain.usecases.GetAllTracksUseCase
 import kadyshev.dmitry.domain.usecases.GetChartFromApiUseCase
 import kadyshev.dmitry.domain.usecases.SearchTracksFromApiUseCase
+import kadyshev.dmitry.ui_tracks_core.mapErrorToMessage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kadyshev.dmitry.ui_tracks_core.mapErrorToMessage
 
 class SearchViewModel(
     private val searchTracksFromApiUseCase: SearchTracksFromApiUseCase,
@@ -28,7 +27,7 @@ class SearchViewModel(
     private val downloadTrackUseCase: DownloadTrackUseCase,
     private val deleteTrackUseCase: DeleteTrackUseCase,
     private val getAllTracksUseCase: GetAllTracksUseCase
-    ) : ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SearchUiState>(SearchUiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -83,6 +82,7 @@ class SearchViewModel(
                     is SearchUiState.Content -> {
                         updateUiWithSyncedTracks(currentState.tracks)
                     }
+
                     else -> Unit
                 }
             } catch (e: Exception) {
@@ -90,7 +90,6 @@ class SearchViewModel(
             }
         }
     }
-
 
     fun onSearchQueryChanged(query: String) {
         currentQuery = query

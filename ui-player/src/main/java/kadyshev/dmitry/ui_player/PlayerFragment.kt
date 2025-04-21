@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -23,9 +22,11 @@ import java.util.Locale
 class PlayerFragment : Fragment() {
 
     private var _binding: FragmentPlayerBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentPlayerBinding
+        get() = _binding ?: throw RuntimeException("FragmentPlayerBinding == null")
 
     private val viewModel: PlayerViewModel by viewModel()
+
     private val playerNavigation: PlayerNavigation by inject()
 
     override fun onCreateView(
@@ -33,7 +34,6 @@ class PlayerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPlayerBinding.inflate(inflater, container, false)
-
 
         return binding.root
     }
@@ -45,6 +45,10 @@ class PlayerFragment : Fragment() {
         val playerData = Json.decodeFromString<PlayerData>(playerDataJson)
         viewModel.setPlayerData(playerData)
         viewModel.startPlayer()
+
+        binding.backButton.setOnClickListener {
+            playerNavigation.popBackFromPlayer(this)
+        }
 
         setupListeners()
         observeUiState()

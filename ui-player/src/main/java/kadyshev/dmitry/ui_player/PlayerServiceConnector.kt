@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import android.util.Log
 import androidx.core.content.ContextCompat
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.player_service.PlayerListener
@@ -17,12 +16,10 @@ import kotlinx.serialization.json.Json
 class PlayerServiceConnector(
     private val context: Context
 ) {
-
     private var playerListener: PlayerListener? = null
     private var serviceBound = false
     private var service: PlayerService? = null
     private var pendingStartData: Pair<PlayerData, Int>? = null
-
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -39,7 +36,6 @@ class PlayerServiceConnector(
                 pendingStartData = null
             }
         }
-
 
         fun onPlayerReady(duration: Int) {
             playerListener?.onTrackDurationReceived(duration)
@@ -66,10 +62,8 @@ class PlayerServiceConnector(
         }
         ContextCompat.startForegroundService(context, intent)
 
-        // Сохраняем данные, которые отдадим при bind
         pendingStartData = playerData to startIndex
 
-        // Биндимся
         context.bindService(
             Intent(context, PlayerService::class.java),
             connection,

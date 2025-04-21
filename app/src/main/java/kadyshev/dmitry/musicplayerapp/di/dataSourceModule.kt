@@ -13,7 +13,5 @@ val dataSourceModule = module {
 
     single { AppDataBase.getInstance(get()) }
 
-
     single { get<AppDataBase>().trackDao() }
-
 }

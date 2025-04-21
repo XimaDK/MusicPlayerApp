@@ -2,14 +2,13 @@ package kadyshev.dmitry.data.dataSource.repositories
 
 import android.content.Context
 import kadyshev.dmitry.data.Mapper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kadyshev.dmitry.data.dataSource.TrackDao
 import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.domain.repository.TrackDataSourceRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
@@ -55,13 +54,11 @@ class TrackDataSourceRepositoryImpl(
         withContext(Dispatchers.IO) {
             val trackDbModel = trackDao.getTrackById(id)
             trackDbModel?.let {
-                // Удаление файла, если он существует
                 val file = File(it.filePath)
                 if (file.exists()) {
                     file.delete()
                 }
 
-                // Удаление из базы данных
                 trackDao.deleteTrack(id)
             }
         }
