@@ -16,20 +16,21 @@ class MusicPlayerManager {
     private var mediaPlayer: MediaPlayer? = null
     private var progressJob: Job? = null
 
+    var onPlayerReady: ((duration: Int) -> Unit)? = null
+
     var onProgressChanged: ((currentPosition: Int, duration: Int) -> Unit)? = null
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    // In MusicPlayerManager class
     var currentPosition: Int
         get() = mediaPlayer?.currentPosition ?: 0
         set(value) {
             mediaPlayer?.seekTo(value)
         }
 
-    var duration: Int
-        get() = mediaPlayer?.duration ?: 0
-        set(value) {}
+    fun getDuration(): Int {
+        return mediaPlayer?.takeIf { it.isPlaying || it.isLooping || it.currentPosition > 0 }?.duration ?: 0
+    }
 
 
     fun play(previewUrl: String, onCompletion: () -> Unit = {}) {
@@ -40,6 +41,8 @@ class MusicPlayerManager {
             prepareAsync()
             setOnPreparedListener {
                 start()
+                onPlayerReady?.invoke(it.duration)
+
                 startProgressUpdates()
             }
             setOnCompletionListener {
@@ -89,7 +92,7 @@ class MusicPlayerManager {
         progressJob = coroutineScope.launch {
             while (isActive) {
                 val current = mediaPlayer?.currentPosition ?: 0
-                val total = mediaPlayer?.duration ?: 0
+                val total = getDuration()
                 onProgressChanged?.invoke(current, total)
                 delay(500L)
             }

@@ -9,12 +9,14 @@ import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import kadyshev.dmitry.core_player.MusicPlayerManager
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
-import kotlinx.serialization.json.Json
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import org.koin.android.ext.android.inject
 
 class PlayerService : Service() {
@@ -28,11 +30,17 @@ class PlayerService : Service() {
 
     private val notificationManager by lazy { getSystemService(NOTIFICATION_SERVICE) as NotificationManager }
 
-    var listener: PlayerListener? = null
+    var onPlayerReady: ((duration: Int) -> Unit)? = null
+
+    private var listener: PlayerListener? = null
 
 
     inner class PlayerBinder : Binder() {
         fun getService(): PlayerService = this@PlayerService
+    }
+
+    fun updateListener(listener: PlayerListener?) {
+        this.listener = listener
     }
 
     override fun onCreate() {
@@ -42,34 +50,48 @@ class PlayerService : Service() {
         musicPlayerManager.onProgressChanged = { cur, tot ->
             listener?.onProgressChanged(cur, tot)
         }
+
+        musicPlayerManager.onPlayerReady = { duration ->
+            onPlayerReady?.invoke(duration)
+
+        }
+
     }
 
     override fun onBind(intent: Intent?): IBinder = binder
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent?.let { i ->
-            i.getStringExtra("playerData")?.let { json ->
-                val data = Json.decodeFromString<PlayerData>(json)
-                val index = i.getIntExtra("startIndex", 0)
-                start(data, index) // Уведомление создастся внутри playCurrent()
-            }
-
-            i.action?.let { action ->
-                when (action) {
-                    ACTION_TOGGLE -> togglePlayPause()
-                    ACTION_NEXT -> moveToNext()
-                    ACTION_PREV -> moveToPrev()
-                    ACTION_REWIND_10 -> rewindBy10Seconds()
-                    ACTION_FORWARD_10 -> forwardBy10Seconds()
-                }
-            }
+        when (intent?.action) {
+            ACTION_TOGGLE -> togglePlayPause()
+            ACTION_NEXT -> moveToNext()
+            ACTION_PREV -> moveToPrev()
+            ACTION_REWIND_10 -> rewindBy10Seconds()
+            ACTION_FORWARD_10 -> forwardBy10Seconds()
         }
         return START_STICKY
     }
 
+
+    fun notifyCurrentState() {
+        val track = playerData?.tracks?.getOrNull(currentIndex)
+        Log.d("PlayerService", track.toString())
+
+        if (track != null) {
+            listener?.onTrackChanged(track, currentIndex)
+        }
+
+        listener?.onProgressChanged(
+            musicPlayerManager.currentPosition,
+            musicPlayerManager.getDuration()
+        )
+
+        listener?.onPlayStateChanged(musicPlayerManager.isPlaying())
+    }
+
+
     fun start(playerData: PlayerData, startIndex: Int) {
         this.playerData = playerData
-        this.currentIndex = startIndex
+        currentIndex = startIndex
         playCurrent()
     }
 
@@ -78,10 +100,9 @@ class PlayerService : Service() {
 
         listener?.onTrackChanged(track, currentIndex)
 
-        // Сразу показываем состояние "playing" в уведомлении
         startForeground(NOTIF_ID, createNotification(track, true))
 
-        musicPlayerManager.play(track.getPlayablePath()) {
+        musicPlayerManager.play(track.getPlayablePath()){
             moveToNext()
         }
         listener?.onPlayStateChanged(true)
@@ -90,10 +111,8 @@ class PlayerService : Service() {
     fun togglePlayPause() {
         val willPlay = !musicPlayerManager.isPlaying()
 
-        // Сразу обновляем состояние визуально
         updateNotificationState(willPlay)
 
-        // Затем выполняем действие
         if (willPlay) {
             musicPlayerManager.resume()
         } else {
@@ -101,6 +120,7 @@ class PlayerService : Service() {
         }
 
         listener?.onPlayStateChanged(willPlay)
+
     }
 
     private fun rewindBy10Seconds() {
@@ -112,18 +132,21 @@ class PlayerService : Service() {
 
     private fun forwardBy10Seconds() {
         val currentPosition = musicPlayerManager.currentPosition
-        val newPosition = (currentPosition + 10000).coerceAtMost(musicPlayerManager.duration)
+        val newPosition = (currentPosition + 10000).coerceAtMost(musicPlayerManager.getDuration())
         musicPlayerManager.seekTo(newPosition)
         updateNotificationState(musicPlayerManager.isPlaying())
     }
 
     private fun updateNotificationState(isPlaying: Boolean) {
         playerData?.tracks?.get(currentIndex)?.let { track ->
+            Log.d("PlayerService", "Updating notification for track: ${track.title}")
+
             notificationManager.notify(NOTIF_ID, createNotification(track, isPlaying))
         }
     }
 
     fun moveToNext() {
+        Log.d("PlayerService", "moveToNext() called")
         if (currentIndex + 1 < (playerData?.tracks?.size ?: 0)) {
             currentIndex++
             playCurrent()
@@ -145,6 +168,10 @@ class PlayerService : Service() {
                 createNotification(track, musicPlayerManager.isPlaying())
             )
         }
+    }
+
+    fun getCurrentDuration(): Int {
+        return musicPlayerManager.getDuration()
     }
 
 

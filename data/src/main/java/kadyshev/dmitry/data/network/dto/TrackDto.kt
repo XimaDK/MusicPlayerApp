@@ -5,5 +5,6 @@ data class TrackDto(
     val title: String,
     val preview: String,
     val artist: ArtistDto,
-    val album: AlbumDto
+    val album: AlbumDto,
+    val duration: Int
 )

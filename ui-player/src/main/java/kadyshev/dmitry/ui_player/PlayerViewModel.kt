@@ -1,73 +1,81 @@
 package kadyshev.dmitry.ui_player
 
-
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import kadyshev.dmitry.core_player.MusicPlayerManager
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
-import kadyshev.dmitry.domain.repository.PlayerServiceInteractor
-import kadyshev.dmitry.player_service.PlayerService
+import kadyshev.dmitry.player_service.PlayerListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.util.Locale
 
 class PlayerViewModel(
-    private val playerServiceInteractor: PlayerServiceInteractor
-) : ViewModel() {
+    private val playerServiceConnector: PlayerServiceConnector
+) : ViewModel(), PlayerListener {
 
-    private val _state = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
-    val state: StateFlow<PlayerUiState> = _state
+    private val _currentTrack = MutableStateFlow<Track?>(null)
+    val currentTrack: StateFlow<Track?> = _currentTrack
 
-    private val _progress = MutableStateFlow(0)
-    val progress: StateFlow<Int> = _progress
+    private val _trackDuration = MutableStateFlow(0)
+    val trackDuration: StateFlow<Int> = _trackDuration
 
-    private val _duration = MutableStateFlow(0)
-    val duration: StateFlow<Int> = _duration
+    private val _currentProgress = MutableStateFlow(0)
+    val currentProgress: StateFlow<Int> = _currentProgress
 
-    fun startService(playerData: PlayerData, currentIndex: Int) {
-        playerServiceInteractor.startService(playerData, currentIndex)
-        _state.value = PlayerUiState.Content(
-            playerData = playerData,
-            currentIndex = currentIndex,
-            isPlaying = true // Стартуем воспроизведение
-        )
+    private val _isPlaying = MutableStateFlow(false)
+    val isPlaying: StateFlow<Boolean> = _isPlaying
+
+    private var playerData: PlayerData? = null
+
+    init {
+        playerServiceConnector.setListener(this)
+    }
+
+    fun setPlayerData(data: PlayerData) {
+        playerData = data
+    }
+
+    fun startPlayer() {
+        playerData?.let {
+            playerServiceConnector.startPlayer(it, it.currentIndex)
+        }
+    }
+
+    fun unbindService() {
+        playerServiceConnector.unbind()
     }
 
     fun togglePlayPause() {
-        playerServiceInteractor.sendAction(PlayerService.ACTION_TOGGLE)
-        val current = _state.value
-        if (current is PlayerUiState.Content) {
-            _state.value = current.copy(isPlaying = !current.isPlaying)
-        }
+        playerServiceConnector.togglePlayPause()
     }
 
-    fun moveToNextTrack() {
-        playerServiceInteractor.sendAction(PlayerService.ACTION_NEXT)
-        updateTrackIndex { it + 1 }
+    fun nextTrack() {
+        playerServiceConnector.nextTrack()
     }
 
-    fun moveToPrevTrack() {
-        playerServiceInteractor.sendAction(PlayerService.ACTION_PREV)
-        updateTrackIndex { it - 1 }
+    fun previousTrack() {
+        playerServiceConnector.previousTrack()
     }
 
     fun seekTo(position: Int) {
-//        playerServiceInteractor.seekTo(position) // если реализуешь — можно будет использовать
+        playerServiceConnector.seekTo(position)
     }
 
-    private fun updateTrackIndex(update: (Int) -> Int) {
-        val current = _state.value
-        if (current is PlayerUiState.Content) {
-            val newIndex = update(current.currentIndex)
-                .coerceIn(0, current.playerData.tracks.lastIndex)
-            _state.value = current.copy(currentIndex = newIndex)
-        }
+    override fun onTrackChanged(track: Track, index: Int) {
+        _currentTrack.value = track
+        _trackDuration.value = playerServiceConnector.getCurrentTrackDuration()
+
     }
 
-    fun formatTime(ms: Int): String {
-        val totalSeconds = ms / 1000
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+    override fun onProgressChanged(current: Int, total: Int) {
+        _currentProgress.value = current
+    }
+
+    override fun onPlayStateChanged(isPlaying: Boolean) {
+        _isPlaying.value = isPlaying
+    }
+
+    override fun onTrackDurationReceived(duration: Int) {
+        _trackDuration.value = duration
     }
 }

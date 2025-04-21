@@ -6,4 +6,5 @@ interface PlayerListener {
     fun onTrackChanged(track: Track, index: Int)
     fun onProgressChanged(current: Int, total: Int)
     fun onPlayStateChanged(isPlaying: Boolean)
+    fun onTrackDurationReceived(duration: Int)
 }

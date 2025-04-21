@@ -1,5 +1,6 @@
 package kadyshev.dmitry.musicplayerapp.di
 
+import android.content.Context
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.core_player.MusicPlayerManager
 import kadyshev.dmitry.domain.repository.PlayerServiceInteractor
@@ -23,7 +24,7 @@ val appModule = module {
         SavedTracksViewModel(get())
     }
 
-    viewModel<PlayerViewModel> {
+    viewModel<PlayerViewModel>{
         PlayerViewModel(get())
     }
 
@@ -31,10 +32,9 @@ val appModule = module {
 
     single { MusicPlayerManager() }
 
+    single<PlayerServiceInteractor> { PlayerServiceInteractorImpl(get()) }
+
     single { PlayerServiceConnector(androidContext()) }
 
-
-
-    single<PlayerServiceInteractor> { PlayerServiceInteractorImpl(get()) }
 
 }

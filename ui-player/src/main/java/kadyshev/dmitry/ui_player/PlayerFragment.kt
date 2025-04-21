@@ -1,155 +1,134 @@
 package kadyshev.dmitry.ui_player
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import coil.load
 import kadyshev.dmitry.domain.entities.PlayerData
-import kadyshev.dmitry.domain.entities.Track
-import kadyshev.dmitry.player_service.PlayerListener
-import kadyshev.dmitry.player_service.PlayerService
 import kadyshev.dmitry.ui_player.databinding.FragmentPlayerBinding
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.util.Locale
 
 class PlayerFragment : Fragment() {
 
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
 
-    private var service: PlayerService? = null
-    private var bound = false
-
-    private var initPlayerData: PlayerData? = null
-    private var initIndex: Int = 0
-    private var isSeeking = false
-
-    private val connection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-            service = (binder as PlayerService.PlayerBinder).getService()
-            bound = true
-
-            // Регистрируем коллбэки для обновления UI
-            service!!.listener = object : PlayerListener {
-                override fun onTrackChanged(track: Track, index: Int) {
-                    binding.trackName.text = track.title
-                    binding.artist.text = track.artist
-                    binding.album.text = track.album ?: ""
-                    binding.trackImage.load(track.coverUrl) { crossfade(true) }
-                }
-
-                override fun onProgressChanged(current: Int, total: Int) {
-                    if (!isSeeking) {
-                        binding.seekBar.max = total
-                        binding.seekBar.progress = current
-                        binding.currentTime.text = formatTime(current)
-                        binding.trackDuration.text = formatTime(total)
-                    }
-                }
-
-                override fun onPlayStateChanged(isPlaying: Boolean) {
-                    binding.playPauseButton.setImageResource(
-                        if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
-                    )
-                }
-            }
-            initPlayerData?.let { data ->
-                service!!.start(data, initIndex)
-                initPlayerData = null
-            }
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            bound = false
-            service = null
-        }
-    }
+    private val viewModel: PlayerViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPlayerBinding.inflate(inflater, container, false)
-        arguments?.getString(ARGUMENTS_KEY)?.let { json ->
-            initPlayerData = Json.decodeFromString<PlayerData>(json)
-            initIndex = initPlayerData?.currentIndex ?: 0
-        }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val playerDataJson = requireArguments().getString("playerData") ?: return
+        val playerData = Json.decodeFromString<PlayerData>(playerDataJson)
+        viewModel.setPlayerData(playerData)
+        viewModel.startPlayer()
+
         setupListeners()
+        observeViewModel()
     }
 
-    override fun onStart() {
-        super.onStart()
-        // Стартуем сервис (foreground) и биндимся к нему
-        val svcIntent = Intent(requireContext(), PlayerService::class.java)
-        ContextCompat.startForegroundService(requireContext(), svcIntent)
-        requireContext().bindService(svcIntent, connection, Context.BIND_AUTO_CREATE)
-    }
+    private fun setupListeners() = with(binding) {
+        playPauseButton.setOnClickListener {
+            viewModel.togglePlayPause()
+        }
 
-    override fun onStop() {
-        super.onStop()
-        if (bound) {
-            service?.listener = null
-            requireContext().unbindService(connection)
-            bound = false
+        nextTrackButton.setOnClickListener {
+            viewModel.nextTrack()
         }
-    }
 
-    private fun setupListeners() {
-        binding.playPauseButton.setOnClickListener {
-            service?.togglePlayPause()
+        prevTrackButton.setOnClickListener {
+            viewModel.previousTrack()
         }
-        binding.nextTrackButton.setOnClickListener {
-            service?.moveToNext()
-        }
-        binding.prevTrackButton.setOnClickListener {
-            service?.moveToPrev()
-        }
-        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            var userIsSeeking = false
+
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    binding.currentTime.text = formatTime(progress)
+                    binding.currentTime.text = formatMillis(progress)
                 }
             }
 
-            override fun onStartTrackingTouch(sb: SeekBar?) {
-                isSeeking = true
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                userIsSeeking = true
             }
 
-            override fun onStopTrackingTouch(sb: SeekBar?) {
-                sb?.let {
-                    service?.seekTo(it.progress)
-                }
-                isSeeking = false
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                userIsSeeking = false
+                seekBar?.progress?.let { viewModel.seekTo(it) }
             }
         })
     }
 
-    private fun formatTime(ms: Int): String {
-        val totalSeconds = ms / 1000
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return String.format(java.util.Locale.getDefault(), "%02d:%02d", minutes, seconds)
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.currentTrack.collect { track ->
+                        Log.d("TRACK", track.toString())
+                        track?.let {
+                            binding.trackName.text = it.title
+                            binding.artist.text = it.artist
+                            binding.trackImage.load(it.coverUrl)
+                            binding.album.text = it.album
+
+                        }
+                    }
+                }
+                launch {
+                    viewModel.trackDuration.collect { duration ->
+                        Log.d("duration", duration.toString())
+                        if (duration > 0) {
+                            binding.trackDuration.text = formatMillis(duration)
+                            binding.seekBar.max = duration
+                        }
+                    }
+                }
+                launch {
+                    viewModel.currentProgress.collect { progress ->
+                        binding.seekBar.progress = progress
+                        binding.currentTime.text = formatMillis(progress)
+                    }
+                }
+
+                launch {
+                    viewModel.isPlaying.collect { isPlaying ->
+                        binding.playPauseButton.setImageResource(
+                            if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+                        )
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.unbindService()
         _binding = null
     }
 
-    companion object {
-        const val ARGUMENTS_KEY = "playerData"
+    private fun formatMillis(ms: Int): String {
+        val seconds = ms / 1000 % 60
+        val minutes = ms / 1000 / 60
+        return String.format(Locale.US, "%02d:%02d", minutes, seconds)
     }
 }

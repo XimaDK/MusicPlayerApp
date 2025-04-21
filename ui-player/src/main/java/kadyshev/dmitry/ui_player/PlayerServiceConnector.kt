@@ -5,88 +5,95 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
 import androidx.core.content.ContextCompat
 import kadyshev.dmitry.domain.entities.PlayerData
-import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.player_service.PlayerListener
 import kadyshev.dmitry.player_service.PlayerService
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 
 class PlayerServiceConnector(
     private val context: Context
-) : PlayerListener {
-    private var service: PlayerService? = null
-    private var bound = false
+) {
 
-    private val _playerState = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
-    val playerState: StateFlow<PlayerUiState> = _playerState
+    private var playerListener: PlayerListener? = null
+    private var serviceBound = false
+    private var service: PlayerService? = null
+    private var pendingStartData: Pair<PlayerData, Int>? = null
+
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-            service = (binder as PlayerService.PlayerBinder).getService()
-            bound = true
-            service?.listener = this@PlayerServiceConnector
+            val localBinder = binder as? PlayerService.PlayerBinder
+            service = localBinder?.getService()
+            service?.updateListener(playerListener)
+            service?.onPlayerReady = { duration ->
+                onPlayerReady(duration)
+            }
+            serviceBound = true
+
+            pendingStartData?.let { (playerData, index) ->
+                service?.start(playerData, index)
+                pendingStartData = null
+            }
+
+            service?.notifyCurrentState()
+        }
+
+
+        fun onPlayerReady(duration: Int) {
+            playerListener?.onTrackDurationReceived(duration)
+            playerListener?.onPlayStateChanged(true)
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            bound = false
+            service?.updateListener(null)
             service = null
-            _playerState.value = PlayerUiState.Error
+            serviceBound = false
         }
     }
 
-    fun start(playerData: PlayerData, index: Int) {
-        try {
-            _playerState.value = PlayerUiState.Loading
-            val intent = Intent(context, PlayerService::class.java)
-            ContextCompat.startForegroundService(context, intent)
-            context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
-            service?.start(playerData, index)
-        } catch (e: Exception) {
-            _playerState.value = PlayerUiState.Error
-        }
+    fun setListener(listener: PlayerListener) {
+        this.playerListener = listener
     }
 
-    fun togglePlayPause() = service?.togglePlayPause()
-     fun moveToNext() = service?.moveToNext()
-     fun moveToPrev() = service?.moveToPrev()
-//     fun seekTo(position: Int) = service?.seekTo(position)
+    fun startPlayer(playerData: PlayerData, startIndex: Int) {
 
-    // PlayerListener callbacks
-    override fun onTrackChanged(track: Track, index: Int) {
-        val current = _playerState.value
-        if (current is PlayerUiState.Content) {
-            _playerState.value = current.copy(
-                playerData = current.playerData.copy(
-                    tracks = current.playerData.tracks.toMutableList().apply {
-                        // Обновляем текущий трек в списке
-                        if (index in indices) this[index] = track
-                    }
-                ),
-                currentIndex = index
-            )
+        val playerDataJson = Json.encodeToString(playerData)
+        val intent = Intent(context, PlayerService::class.java).apply {
+            putExtra("playerData", playerDataJson)
+            putExtra("startIndex", startIndex)
         }
-    }
+        ContextCompat.startForegroundService(context, intent)
 
-    override fun onProgressChanged(current: Int, total: Int) {
-        // Можно добавить прогресс в состояние, если нужно
-    }
+        // Сохраняем данные, которые отдадим при bind
+        pendingStartData = playerData to startIndex
 
-    override fun onPlayStateChanged(isPlaying: Boolean) {
-        val current = _playerState.value
-        if (current is PlayerUiState.Content) {
-            _playerState.value = current.copy(isPlaying = isPlaying)
-        }
+        // Биндимся
+        context.bindService(
+            Intent(context, PlayerService::class.java),
+            connection,
+            Context.BIND_AUTO_CREATE
+        )
     }
 
     fun unbind() {
-        if (bound) {
-            service?.listener = null
+        if (serviceBound) {
+            service?.updateListener(null)
             context.unbindService(connection)
-            bound = false
+            service = null
+            serviceBound = false
         }
     }
+
+    fun getCurrentTrackDuration(): Int {
+        return service?.getCurrentDuration() ?: 0
+    }
+
+    fun togglePlayPause() = service?.togglePlayPause()
+    fun nextTrack() = service?.moveToNext()
+    fun previousTrack() = service?.moveToPrev()
+    fun seekTo(position: Int) = service?.seekTo(position)
 }

@@ -12,6 +12,7 @@ class TrackApiRepositoryImpl(private val api: DeezerApi, private val mapper: Map
     override suspend fun searchTracks(query: String): List<Track> {
         val response = api.search(query)
         val mappedTracks = mapper.mapTracksDtoToDomain(response)
+        Log.d("tracks", response.data.toString())
         return mappedTracks
     }
 

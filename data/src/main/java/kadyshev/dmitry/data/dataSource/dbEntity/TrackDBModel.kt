@@ -12,5 +12,7 @@ data class TrackDBModel(
     val isDownloaded: Boolean,
     val previewUrl: String,
     val album: String? = null,
-    val coverUrl: String? = null
+    val coverUrl: String? = null,
+    val duration: Int
+
 )

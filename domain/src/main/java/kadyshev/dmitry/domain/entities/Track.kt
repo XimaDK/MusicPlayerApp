@@ -11,5 +11,6 @@ data class Track(
     val coverUrl: String? = null,
     val album: String? = null,
     val isDownloaded: Boolean = false,
-    val localPath: String? = null
+    val localPath: String? = null,
+    val duration: Int
 )
