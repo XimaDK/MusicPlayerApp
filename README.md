@@ -24,7 +24,7 @@
 - `ui-search-tracks` — экран поиска музыки через API
 - `ui-tracks-core` — адаптер, BaseFragment
 
-## 🔧 Технологии
+## Технологии
 
 - Kotlin + Coroutines + Flow
 - Retrofit (сетевые запросы)
@@ -36,11 +36,11 @@
 - Koin (внедрение зависимостей)
 - SharedPreferences
 
-Примечание
+## Примечание
 Для доступа к трекам используется публичный Deezer API.
 Подключение к API не требует ключей или авторизации.
 
-## 📦 Запуск
+## Запуск
 Клонируй репозиторий:
    ```bash
    git clone https://github.com/XimaDK/MusicPlayerApp.git
