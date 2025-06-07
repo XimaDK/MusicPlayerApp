@@ -32,10 +32,19 @@ android {
         jvmTarget = "1.8"
         freeCompilerArgs += "-Xextended-compiler-checks"
     }
+
+    kapt {
+        useBuildCache = true
+        javacOptions {
+            option("--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED")
+        }
+    }
+
 }
 
 dependencies {
 
+    implementation (libs.dagger)
     implementation(libs.converter.gson)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

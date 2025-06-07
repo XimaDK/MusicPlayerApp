@@ -28,19 +28,38 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
+
+    allprojects {
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
+
     buildFeatures {
         viewBinding = true
     }
+
+    kapt {
+        useBuildCache = true
+        javacOptions {
+            option("--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED")
+        }
+    }
+
 }
 
 dependencies {
 
+    implementation (libs.dagger)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

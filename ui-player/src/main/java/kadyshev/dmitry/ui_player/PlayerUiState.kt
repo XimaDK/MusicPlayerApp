@@ -13,3 +13,5 @@ sealed class PlayerUiState {
     ) : PlayerUiState()
     data object Error : PlayerUiState()
 }
+
+//single source of truth
