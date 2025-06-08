@@ -43,7 +43,6 @@ class SearchFragment : BaseTracksFragment() {
 
     override fun onAttach(context: Context) {
         (requireActivity().application as AppComponentProvider).inject(this)
-        Log.d("ViewModel", viewModel.toString())
         super.onAttach(context)
 
     }
@@ -54,6 +53,7 @@ class SearchFragment : BaseTracksFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSearchBinding.inflate(layoutInflater)
+        Log.d("ViewModelSearchFragment", viewModel.toString())
         return binding.root
     }
 

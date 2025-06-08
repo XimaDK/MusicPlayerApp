@@ -22,9 +22,8 @@ class App : Application(), AppComponentProvider {
 
     }
 
+    //open-closed principe
     override fun <T> inject(fragment: T) where T : Fragment {
-        Log.d("AppComponent", "Inject called for fragment: ${fragment::class.java.simpleName}")
-
         when (fragment) {
             is SearchFragment -> appComponent.searchComponentFactory().create()
                 .inject(fragment)

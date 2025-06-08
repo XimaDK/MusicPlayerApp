@@ -62,7 +62,6 @@ class PlayerServiceConnector @Inject constructor(
         }
 
         if (!serviceBound) {
-            // Запускаем сервис, если он не запущен
             ContextCompat.startForegroundService(context, intent)
 
             pendingStartData = playerData to startIndex
@@ -76,6 +75,7 @@ class PlayerServiceConnector @Inject constructor(
             service?.start(playerData, startIndex)
         }
     }
+
 
 
     fun unbind() {

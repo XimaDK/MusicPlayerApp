@@ -2,6 +2,7 @@ package kadyshev.dmitry.ui_saved_tracks
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -53,6 +54,7 @@ class SavedTracksFragment : BaseTracksFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSavedTracksBinding.inflate(layoutInflater)
+        Log.d("ViewModelSavedTracksFragment", viewModel.toString())
         return binding.root
     }
 

@@ -6,6 +6,8 @@ import kadyshev.dmitry.domain.repository.TrackApiRepository
 import kadyshev.dmitry.domain.repository.TrackDataSourceRepository
 import kadyshev.dmitry.domain.usecases.*
 
+
+//можно ли использовать в domain слое @Inject constructor или это загрязнение?
 @Module
 class  DomainModule {
 

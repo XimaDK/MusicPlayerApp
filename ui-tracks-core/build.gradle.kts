@@ -36,8 +36,11 @@ android {
 }
 
 dependencies {
+    implementation(libs.kotlinx.serialization.json)
+
     implementation(project(":domain"))
     implementation(libs.dagger)
+    implementation(project(":player-service"))
     implementation(project(":core-player"))
     implementation(libs.coil)
     implementation(libs.androidx.core.ktx)

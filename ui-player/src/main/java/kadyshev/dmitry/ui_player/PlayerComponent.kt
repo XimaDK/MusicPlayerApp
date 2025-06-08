@@ -1,10 +1,10 @@
 package kadyshev.dmitry.ui_player
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.Subcomponent
 import dagger.multibindings.IntoMap
 import kadyshev.dmitry.core_di.ViewModelKey
@@ -38,6 +38,7 @@ class PlayerViewModelFactory @Inject constructor(
     private val creators: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        Log.d("PlayerVMFactory", "Creating ViewModel for $modelClass")
         val creator = creators[modelClass]
             ?: creators.entries.firstOrNull { modelClass.isAssignableFrom(it.key) }?.value
             ?: throw IllegalArgumentException("Unknown ViewModel class $modelClass")

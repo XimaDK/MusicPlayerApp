@@ -15,6 +15,7 @@ import androidx.core.app.NotificationCompat
 import kadyshev.dmitry.core_player.MusicPlayerManager
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class PlayerService : Service() {
@@ -39,6 +40,10 @@ class PlayerService : Service() {
         fun getService(): PlayerService = this@PlayerService
     }
 
+    fun isPlaying(): Boolean {
+        return musicPlayerManager.isPlaying()
+    }
+
     fun updateListener(listener: PlayerListener?) {
         this.listener = listener
     }
@@ -60,6 +65,23 @@ class PlayerService : Service() {
     override fun onBind(intent: Intent?): IBinder = binder
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val playerDataJson = intent?.getStringExtra("playerData")
+        val startIndex = intent?.getIntExtra("startIndex", 0) ?: 0
+
+        if (playerDataJson != null) {
+            // Это запустилось без бинда — видимо, приложение стартовало из фона
+            val parsedData = try {
+                Json.decodeFromString<PlayerData>(playerDataJson)
+            } catch (e: Exception) {
+                null
+            }
+            if (parsedData != null) {
+                this.playerData = parsedData
+                this.currentIndex = startIndex
+                playCurrent()
+            }
+        }
+
         when (intent?.action) {
             ACTION_TOGGLE -> togglePlayPause()
             ACTION_NEXT -> moveToNext()
@@ -67,8 +89,10 @@ class PlayerService : Service() {
             ACTION_REWIND_10 -> rewindBy10Seconds()
             ACTION_FORWARD_10 -> forwardBy10Seconds()
         }
+
         return START_STICKY
     }
+
 
     fun start(playerData: PlayerData, startIndex: Int) {
         this.playerData = playerData

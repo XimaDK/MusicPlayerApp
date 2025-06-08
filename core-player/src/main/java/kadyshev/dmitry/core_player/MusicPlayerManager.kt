@@ -11,12 +11,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
-class MusicPlayerManager  @Inject constructor(){
+class MusicPlayerManager @Inject constructor() {
 
     private var mediaPlayer: MediaPlayer? = null
     private var progressJob: Job? = null
 
     var onPlayerReady: ((duration: Int) -> Unit)? = null
+
+    private var isPreparing = false
 
     var onProgressChanged: ((currentPosition: Int, duration: Int) -> Unit)? = null
 
@@ -36,6 +38,8 @@ class MusicPlayerManager  @Inject constructor(){
 
     fun play(previewUrl: String, onCompletion: () -> Unit = {}) {
         stop()
+
+        if (isPreparing) return // Не запускаем повторно во время подготовки
 
         mediaPlayer = MediaPlayer().apply {
             setDataSource(previewUrl)

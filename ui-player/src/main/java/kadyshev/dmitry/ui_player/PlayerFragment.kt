@@ -2,6 +2,7 @@ package kadyshev.dmitry.ui_player
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -48,7 +49,7 @@ class PlayerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPlayerBinding.inflate(inflater, container, false)
-
+        Log.d("ViewModelPlayerFragment", viewModel.toString())
         return binding.root
     }
 
