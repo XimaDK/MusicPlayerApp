@@ -8,9 +8,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
-class MusicPlayerManager {
+class MusicPlayerManager  @Inject constructor(){
 
     private var mediaPlayer: MediaPlayer? = null
     private var progressJob: Job? = null

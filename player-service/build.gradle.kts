@@ -35,8 +35,8 @@ android {
 dependencies {
     implementation(libs.androidx.media)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.koin.android)
     implementation(project(":domain"))
+    implementation(libs.dagger)
     implementation(project(":core-player"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

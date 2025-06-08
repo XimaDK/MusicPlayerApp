@@ -1,5 +1,6 @@
 package kadyshev.dmitry.ui_player
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,17 +8,18 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil.load
+import kadyshev.dmitry.core_di.AppComponentProvider
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.ui_player.databinding.FragmentPlayerBinding
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.Locale
+import javax.inject.Inject
 
 class PlayerFragment : Fragment() {
 
@@ -25,9 +27,21 @@ class PlayerFragment : Fragment() {
     private val binding: FragmentPlayerBinding
         get() = _binding ?: throw RuntimeException("FragmentPlayerBinding == null")
 
-    private val viewModel: PlayerViewModel by viewModel()
 
-    private val playerNavigation: PlayerNavigation by inject()
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val viewModel: PlayerViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[PlayerViewModel::class.java]
+    }
+
+    @Inject
+    lateinit var playerNavigation: PlayerNavigation
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (requireContext().applicationContext as AppComponentProvider).inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

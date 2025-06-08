@@ -38,14 +38,15 @@ android {
 
 dependencies {
     implementation(libs.coil)
-    implementation(libs.koin.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(project(":domain"))
     implementation(project(":core-player"))
-    implementation(project(":core-player"))
+    implementation(project(":core-di"))
+    implementation(project(":core-ViewModelFactory"))
+    implementation (libs.dagger)
     implementation(project(":player-service"))
     implementation(libs.material)
     implementation(project(":core-navigation"))

@@ -30,16 +30,15 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    buildFeatures{
+    buildFeatures {
         viewBinding = true
     }
 }
 
 dependencies {
     implementation(project(":domain"))
+    implementation(libs.dagger)
     implementation(project(":core-player"))
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
     implementation(libs.coil)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

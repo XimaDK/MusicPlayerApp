@@ -5,8 +5,12 @@ import kadyshev.dmitry.data.Mapper
 import kadyshev.dmitry.data.network.DeezerApi
 import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.domain.repository.TrackApiRepository
+import javax.inject.Inject
 
-class TrackApiRepositoryImpl(private val api: DeezerApi, private val mapper: Mapper) :
+class TrackApiRepositoryImpl @Inject constructor(
+    private val api: DeezerApi,
+    private val mapper: Mapper
+) :
     TrackApiRepository {
 
     override suspend fun searchTracks(query: String): List<Track> {

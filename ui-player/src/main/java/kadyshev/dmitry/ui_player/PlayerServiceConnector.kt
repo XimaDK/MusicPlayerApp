@@ -11,9 +11,10 @@ import kadyshev.dmitry.player_service.PlayerListener
 import kadyshev.dmitry.player_service.PlayerService
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
 
-class PlayerServiceConnector(
+class PlayerServiceConnector @Inject constructor(
     private val context: Context
 ) {
     private var playerListener: PlayerListener? = null
@@ -54,22 +55,28 @@ class PlayerServiceConnector(
     }
 
     fun startPlayer(playerData: PlayerData, startIndex: Int) {
-
         val playerDataJson = Json.encodeToString(playerData)
         val intent = Intent(context, PlayerService::class.java).apply {
             putExtra("playerData", playerDataJson)
             putExtra("startIndex", startIndex)
         }
-        ContextCompat.startForegroundService(context, intent)
 
-        pendingStartData = playerData to startIndex
+        if (!serviceBound) {
+            // Запускаем сервис, если он не запущен
+            ContextCompat.startForegroundService(context, intent)
 
-        context.bindService(
-            Intent(context, PlayerService::class.java),
-            connection,
-            Context.BIND_AUTO_CREATE
-        )
+            pendingStartData = playerData to startIndex
+
+            context.bindService(
+                Intent(context, PlayerService::class.java),
+                connection,
+                Context.BIND_AUTO_CREATE
+            )
+        } else {
+            service?.start(playerData, startIndex)
+        }
     }
+
 
     fun unbind() {
         if (serviceBound) {

@@ -59,6 +59,7 @@ android {
 
 dependencies {
 
+    kapt(libs.dagger.compiler)
     implementation (libs.dagger)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.ktx)
@@ -69,6 +70,8 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(project(":core-navigation"))
+    implementation(project(":core-di"))
+    implementation(project(":core-ViewModelFactory"))
     implementation(project(":player-service"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -80,11 +83,9 @@ dependencies {
     implementation(project(":ui-saved-tracks"))
     implementation(project(":ui-player"))
     implementation(project(":ui-tracks-core"))
-    implementation(libs.koin.core)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
-    implementation(libs.koin.android)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
 }

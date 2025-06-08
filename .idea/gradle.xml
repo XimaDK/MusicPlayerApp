@@ -11,6 +11,8 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/core-ViewModelFactory" />
+            <option value="$PROJECT_DIR$/core-di" />
             <option value="$PROJECT_DIR$/core-navigation" />
             <option value="$PROJECT_DIR$/core-player" />
             <option value="$PROJECT_DIR$/data" />

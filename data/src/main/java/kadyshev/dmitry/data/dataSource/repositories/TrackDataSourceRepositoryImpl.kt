@@ -12,8 +12,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
+import javax.inject.Inject
 
-class TrackDataSourceRepositoryImpl(
+class TrackDataSourceRepositoryImpl @Inject constructor(
     private val context: Context,
     private val trackDao: TrackDao,
     private val mapper: Mapper

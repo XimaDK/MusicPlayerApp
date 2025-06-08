@@ -7,11 +7,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kadyshev.dmitry.core_player.MusicPlayerManager
 import kadyshev.dmitry.domain.entities.Track
-import org.koin.android.ext.android.inject
+import javax.inject.Inject
 
 abstract class BaseTracksFragment : Fragment() {
 
-    private val playerManager: MusicPlayerManager by inject()
+
+    @Inject
+    lateinit var playerManager: MusicPlayerManager
     private var currentPlayingTrackId: Long? = null
     protected lateinit var adapter: TracksAdapter
 

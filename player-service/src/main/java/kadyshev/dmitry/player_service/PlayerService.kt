@@ -15,13 +15,14 @@ import androidx.core.app.NotificationCompat
 import kadyshev.dmitry.core_player.MusicPlayerManager
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
-import org.koin.android.ext.android.inject
+import javax.inject.Inject
 
 class PlayerService : Service() {
 
     private val binder = PlayerBinder()
 
-    private val musicPlayerManager: MusicPlayerManager by inject()
+    @Inject
+    private val musicPlayerManager = MusicPlayerManager()
 
     private var playerData: PlayerData? = null
 

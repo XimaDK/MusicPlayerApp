@@ -1,11 +1,15 @@
 package kadyshev.dmitry.ui_search
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import kadyshev.dmitry.core_di.AppComponentProvider
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
@@ -16,8 +20,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
+
+import javax.inject.Inject
 
 class SearchFragment : BaseTracksFragment() {
 
@@ -25,11 +29,25 @@ class SearchFragment : BaseTracksFragment() {
     private val binding: FragmentSearchBinding
         get() = _binding ?: throw RuntimeException("FragmentSearchBinding == null")
 
-    private val viewModel: SearchViewModel by viewModel()
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     override val recyclerView get() = binding.tracksRecyclerView
 
-    private val playerNavigation: PlayerNavigation by inject()
+    @Inject
+    lateinit var playerNavigation: PlayerNavigation
+
+    private val viewModel: SearchViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[SearchViewModel::class.java]
+    }
+
+    override fun onAttach(context: Context) {
+        (requireActivity().application as AppComponentProvider).inject(this)
+        Log.d("ViewModel", viewModel.toString())
+        super.onAttach(context)
+
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

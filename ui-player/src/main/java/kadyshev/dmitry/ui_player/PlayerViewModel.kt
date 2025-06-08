@@ -6,8 +6,9 @@ import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.player_service.PlayerListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-class PlayerViewModel(
+class PlayerViewModel @Inject constructor(
     private val playerServiceConnector: PlayerServiceConnector
 ) : ViewModel(), PlayerListener {
 

@@ -37,13 +37,14 @@ android {
 
 dependencies {
 
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(project(":ui-tracks-core"))
     implementation(project(":domain"))
     implementation(project(":core-navigation"))
     implementation(libs.kotlinx.serialization.json)
-
+    implementation(project(":core-ViewModelFactory"))
+    implementation (libs.dagger)
+    implementation(project(":core-di"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

@@ -1,12 +1,13 @@
 package kadyshev.dmitry.musicplayerapp
 
-import androidx.core.bundle.bundleOf
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
+import javax.inject.Inject
 
-class PlayerNavigationImpl : PlayerNavigation {
+class PlayerNavigationImpl @Inject constructor() : PlayerNavigation {
     override fun openPlayer(fragment: Fragment, playerDataJson: String) {
         val bundle = bundleOf("playerData" to playerDataJson)
         fragment.findNavController().navigate(
@@ -17,6 +18,7 @@ class PlayerNavigationImpl : PlayerNavigation {
                 .build()
         )
     }
+
     override fun popBackFromPlayer(fragment: Fragment) {
         fragment.findNavController().popBackStack()
     }

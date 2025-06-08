@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SavedTracksViewModel(
+class SavedTracksViewModel @Inject constructor(
     private val getAllTracksUseCase: GetAllTracksUseCase,
     private val deleteTrackUseCase: DeleteTrackUseCase,
     private val downloadTrackUseCase: DownloadTrackUseCase

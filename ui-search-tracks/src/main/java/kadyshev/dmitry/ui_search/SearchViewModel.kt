@@ -20,8 +20,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SearchViewModel(
+class SearchViewModel @Inject constructor(
     private val searchTracksFromApiUseCase: SearchTracksFromApiUseCase,
     private val getChartFromApiUseCase: GetChartFromApiUseCase,
     private val downloadTrackUseCase: DownloadTrackUseCase,
