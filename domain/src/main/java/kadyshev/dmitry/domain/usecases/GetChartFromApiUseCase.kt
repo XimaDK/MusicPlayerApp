@@ -4,8 +4,9 @@ import kadyshev.dmitry.domain.entities.Track
 import kadyshev.dmitry.domain.repository.TrackApiRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import javax.inject.Inject
 
-class GetChartFromApiUseCase(private val repository: TrackApiRepository) {
+class GetChartFromApiUseCase @Inject constructor (private val repository: TrackApiRepository) {
     operator fun invoke(): Flow<List<Track>> = flow {
         emit(repository.getChart())
     }

@@ -4,27 +4,21 @@ import android.app.Application
 import dagger.BindsInstance
 import dagger.Component
 import kadyshev.dmitry.core_di.ApplicationScope
-import kadyshev.dmitry.ui_player.PlayerComponent
-import kadyshev.dmitry.ui_saved_tracks.SavedComponent
-import kadyshev.dmitry.ui_search.SearchComponent
+import kadyshev.dmitry.core_di.PlayerDependencies
+import kadyshev.dmitry.core_di.SavedDependencies
+import kadyshev.dmitry.core_di.SearchDependencies
 
 @ApplicationScope
 @Component(
-    modules = [DataModule::class, NetworkModule::class, DomainModule::class, DatabaseModule::class, AppModule::class]
+    modules = [DataModule::class, NetworkModule::class, DatabaseModule::class, AppModule::class, VMModule::class]
 )
-interface ApplicationComponent {
+interface ApplicationComponent : SearchDependencies, SavedDependencies, PlayerDependencies {
 
-    fun searchComponentFactory(): SearchComponent.Factory
-
-    fun savedTracksComponentFactory(): SavedComponent.Factory
-
-    fun playerComponentFactory(): PlayerComponent.Factory
 
     @Component.Factory
-    interface ApplicationComponentFactory {
+    interface Factory {
         fun create(
             @BindsInstance application: Application
         ): ApplicationComponent
     }
-
 }

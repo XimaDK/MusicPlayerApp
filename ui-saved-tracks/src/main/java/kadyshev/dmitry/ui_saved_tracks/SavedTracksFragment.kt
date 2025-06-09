@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import kadyshev.dmitry.core_di.SavedDependencies
+import kadyshev.dmitry.core_di.SearchDependencies
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
@@ -38,18 +40,23 @@ class SavedTracksFragment : BaseTracksFragment() {
     @Inject
     lateinit var playerNavigation: PlayerNavigation
 
-    override fun onAddClick(track: Track) {
-        viewModel.toggleTrackDownload(track)
-    }
+    private lateinit var savedComponent: SavedComponent
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val app = requireActivity().application as SavedComponentProvider
-        app.provideSavedComponentFactory()
-            .create()
-            .inject(this)
+        val deps = requireActivity().application as SavedDependencies
+
+        savedComponent = DaggerSavedComponent
+            .factory()
+            .create(deps)
+
+        savedComponent.inject(this)
+
     }
 
+    override fun onAddClick(track: Track) {
+        viewModel.toggleTrackDownload(track)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

@@ -1,34 +1,32 @@
 package kadyshev.dmitry.musicplayerapp
 
 import android.app.Application
+import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
-import kadyshev.dmitry.musicplayerapp.di.ApplicationComponent
+import androidx.lifecycle.ViewModelProvider
+import kadyshev.dmitry.core_di.PlayerDependencies
+import kadyshev.dmitry.core_di.SavedDependencies
+import kadyshev.dmitry.core_di.SearchDependencies
+import kadyshev.dmitry.core_navigtaion.PlayerNavigation
+import kadyshev.dmitry.domain.repository.TrackApiRepository
+import kadyshev.dmitry.domain.repository.TrackDataSourceRepository
 import kadyshev.dmitry.musicplayerapp.di.DaggerApplicationComponent
-import kadyshev.dmitry.ui_player.PlayerComponent
-import kadyshev.dmitry.ui_player.PlayerComponentProvider
-import kadyshev.dmitry.ui_saved_tracks.SavedComponent
-import kadyshev.dmitry.ui_saved_tracks.SavedComponentProvider
-import kadyshev.dmitry.ui_search.SearchComponent
-import kadyshev.dmitry.ui_search.SearchComponentProvider
 
-class App : Application(),
-    SearchComponentProvider,
-    SavedComponentProvider,
-    PlayerComponentProvider {
+class App : Application(), SearchDependencies, SavedDependencies, PlayerDependencies {
 
-    val appComponent: ApplicationComponent = DaggerApplicationComponent.factory().create(this)
+    private val appComponent = DaggerApplicationComponent.factory().create(this)
 
     override fun onCreate() {
         super.onCreate()
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
     }
 
-    override fun provideSearchComponentFactory(): SearchComponent.Factory =
-        appComponent.searchComponentFactory()
+    override fun context(): Context = this
+    override fun playerNavigation(): PlayerNavigation = appComponent.playerNavigation()
+    override fun trackApiRepository(): TrackApiRepository = appComponent.trackApiRepository()
+    override fun trackDataSourceRepository(): TrackDataSourceRepository =
+        appComponent.trackDataSourceRepository()
 
-    override fun provideSavedComponentFactory(): SavedComponent.Factory =
-        appComponent.savedTracksComponentFactory()
+    override fun viewModelFactory(): ViewModelProvider.Factory = appComponent.viewModelFactory()
 
-    override fun providePlayerComponentFactory(): PlayerComponent.Factory =
-        appComponent.playerComponentFactory()
 }

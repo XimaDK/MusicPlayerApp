@@ -34,6 +34,8 @@ android {
 
 dependencies {
 
+    implementation(project(":core-navigation"))
+    implementation(project(":domain"))
     implementation(libs.dagger)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

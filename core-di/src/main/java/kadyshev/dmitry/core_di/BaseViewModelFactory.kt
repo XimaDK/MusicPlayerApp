@@ -1,5 +1,6 @@
 package kadyshev.dmitry.core_di
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import javax.inject.Inject
@@ -10,6 +11,7 @@ class BaseViewModelFactory @Inject constructor(
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        Log.d("BaseViewModelFactory", modelClass.toString())
         val creator = creators[modelClass]
             ?: creators.entries.firstOrNull { modelClass.isAssignableFrom(it.key) }?.value
             ?: throw IllegalArgumentException("Unknown ViewModel class $modelClass")

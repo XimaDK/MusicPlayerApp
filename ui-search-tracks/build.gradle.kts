@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
+
 }
 
 android {
@@ -36,6 +38,7 @@ android {
 }
 
 dependencies {
+    kapt(libs.dagger.compiler)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.navigation.fragment.ktx)

@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
+
 }
 
 android {
@@ -37,6 +39,7 @@ android {
 
 dependencies {
 
+    kapt(libs.dagger.compiler)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(project(":ui-tracks-core"))
     implementation(project(":domain"))

@@ -13,6 +13,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil.load
+import kadyshev.dmitry.core_di.PlayerDependencies
+import kadyshev.dmitry.core_di.SavedDependencies
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.ui_player.databinding.FragmentPlayerBinding
@@ -38,12 +40,19 @@ class PlayerFragment : Fragment() {
     @Inject
     lateinit var playerNavigation: PlayerNavigation
 
+    private lateinit var savedComponent: PlayerComponent
+
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val app = requireActivity().application as PlayerComponentProvider
-        app.providePlayerComponentFactory()
-            .create()
-            .inject(this)
+        val deps = requireActivity().application as PlayerDependencies
+
+        savedComponent = DaggerPlayerComponent
+            .factory()
+            .create(deps)
+
+        savedComponent.inject(this)
+
     }
 
     override fun onCreateView(
