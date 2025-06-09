@@ -2,6 +2,7 @@ package kadyshev.dmitry.musicplayerapp.di
 
 import dagger.Binds
 import dagger.Module
+import kadyshev.dmitry.core_di.ApplicationScope
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.data.dataSource.repositories.TrackDataSourceRepositoryImpl
 import kadyshev.dmitry.domain.repository.TrackDataSourceRepository

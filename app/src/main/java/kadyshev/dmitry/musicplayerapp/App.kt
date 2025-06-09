@@ -1,40 +1,34 @@
 package kadyshev.dmitry.musicplayerapp
 
 import android.app.Application
-import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.fragment.app.Fragment
-import kadyshev.dmitry.core_di.AppComponentProvider
 import kadyshev.dmitry.musicplayerapp.di.ApplicationComponent
 import kadyshev.dmitry.musicplayerapp.di.DaggerApplicationComponent
-import kadyshev.dmitry.ui_player.PlayerFragment
-import kadyshev.dmitry.ui_saved_tracks.SavedTracksFragment
-import kadyshev.dmitry.ui_search.SearchFragment
+import kadyshev.dmitry.ui_player.PlayerComponent
+import kadyshev.dmitry.ui_player.PlayerComponentProvider
+import kadyshev.dmitry.ui_saved_tracks.SavedComponent
+import kadyshev.dmitry.ui_saved_tracks.SavedComponentProvider
+import kadyshev.dmitry.ui_search.SearchComponent
+import kadyshev.dmitry.ui_search.SearchComponentProvider
 
-class App : Application(), AppComponentProvider {
+class App : Application(),
+    SearchComponentProvider,
+    SavedComponentProvider,
+    PlayerComponentProvider {
 
     val appComponent: ApplicationComponent = DaggerApplicationComponent.factory().create(this)
 
     override fun onCreate() {
         super.onCreate()
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-
-
     }
 
-    //open-closed principe
-    override fun <T> inject(fragment: T) where T : Fragment {
-        when (fragment) {
-            is SearchFragment -> appComponent.searchComponentFactory().create()
-                .inject(fragment)
+    override fun provideSearchComponentFactory(): SearchComponent.Factory =
+        appComponent.searchComponentFactory()
 
-            is SavedTracksFragment -> appComponent.savedTracksComponentFactory().create()
-                .inject(fragment)
+    override fun provideSavedComponentFactory(): SavedComponent.Factory =
+        appComponent.savedTracksComponentFactory()
 
-            is PlayerFragment -> appComponent.playerComponentFactory().create().inject(fragment)
-
-
-            else -> throw IllegalArgumentException("Unknown fragment type: ${fragment::class.java}")
-        }
-    }
+    override fun providePlayerComponentFactory(): PlayerComponent.Factory =
+        appComponent.playerComponentFactory()
 }

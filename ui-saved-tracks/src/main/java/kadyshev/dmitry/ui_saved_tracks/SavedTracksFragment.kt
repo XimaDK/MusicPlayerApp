@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import kadyshev.dmitry.core_di.AppComponentProvider
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
@@ -45,7 +44,10 @@ class SavedTracksFragment : BaseTracksFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (requireContext().applicationContext as AppComponentProvider).inject(this)
+        val app = requireActivity().application as SavedComponentProvider
+        app.provideSavedComponentFactory()
+            .create()
+            .inject(this)
     }
 
 

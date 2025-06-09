@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil.load
-import kadyshev.dmitry.core_di.AppComponentProvider
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.ui_player.databinding.FragmentPlayerBinding
@@ -41,7 +40,10 @@ class PlayerFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (requireContext().applicationContext as AppComponentProvider).inject(this)
+        val app = requireActivity().application as PlayerComponentProvider
+        app.providePlayerComponentFactory()
+            .create()
+            .inject(this)
     }
 
     override fun onCreateView(

@@ -1,4 +1,4 @@
-package kadyshev.dmitry.musicplayerapp.di
+package kadyshev.dmitry.core_di
 
 import javax.inject.Scope
 

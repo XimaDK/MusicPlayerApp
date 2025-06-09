@@ -2,6 +2,7 @@ package kadyshev.dmitry.musicplayerapp.di
 
 import dagger.Module
 import dagger.Provides
+import kadyshev.dmitry.core_di.ApplicationScope
 import kadyshev.dmitry.data.Mapper
 import kadyshev.dmitry.data.network.DeezerApi
 import kadyshev.dmitry.data.network.repositories.TrackApiRepositoryImpl

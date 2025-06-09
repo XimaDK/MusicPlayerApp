@@ -1,15 +1,13 @@
 package kadyshev.dmitry.ui_saved_tracks
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import dagger.Binds
 import dagger.Module
 import dagger.Subcomponent
 import dagger.multibindings.IntoMap
+import kadyshev.dmitry.core_di.BaseViewModelFactory
 import kadyshev.dmitry.core_di.ViewModelKey
-import javax.inject.Inject
-import javax.inject.Provider
 
 @Subcomponent(modules = [SavedTracksBindsModule::class])
 interface SavedComponent {
@@ -30,16 +28,20 @@ interface SavedTracksBindsModule {
     fun bindSavedTracksViewModel(impl: SavedTracksViewModel): ViewModel
 
     @Binds
-    fun bindViewModelFactory(factory: SavedTracksViewModelFactory): ViewModelProvider.Factory
+    fun bindViewModelFactory(factory: BaseViewModelFactory): ViewModelProvider.Factory
 }
 
-class SavedTracksViewModelFactory @Inject constructor(
-    private val creators: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        val creator = creators[modelClass]
-            ?: creators.entries.firstOrNull { modelClass.isAssignableFrom(it.key) }?.value
-            ?: throw IllegalArgumentException("Unknown ViewModel class $modelClass")
-        return creator.get() as T
-    }
+interface SavedComponentProvider {
+    fun provideSavedComponentFactory(): SavedComponent.Factory
 }
+
+//class SavedTracksViewModelFactory @Inject constructor(
+//    private val creators: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>
+//) : ViewModelProvider.Factory {
+//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        val creator = creators[modelClass]
+//            ?: creators.entries.firstOrNull { modelClass.isAssignableFrom(it.key) }?.value
+//            ?: throw IllegalArgumentException("Unknown ViewModel class $modelClass")
+//        return creator.get() as T
+//    }
+//}

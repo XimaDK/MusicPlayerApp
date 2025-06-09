@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import kadyshev.dmitry.core_di.AppComponentProvider
 import kadyshev.dmitry.core_navigtaion.PlayerNavigation
 import kadyshev.dmitry.domain.entities.PlayerData
 import kadyshev.dmitry.domain.entities.Track
@@ -20,7 +19,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-
 import javax.inject.Inject
 
 class SearchFragment : BaseTracksFragment() {
@@ -42,9 +40,11 @@ class SearchFragment : BaseTracksFragment() {
     }
 
     override fun onAttach(context: Context) {
-        (requireActivity().application as AppComponentProvider).inject(this)
         super.onAttach(context)
-
+        val app = requireActivity().application as SearchComponentProvider
+        app.provideSearchComponentFactory()
+            .create()
+            .inject(this)
     }
 
 

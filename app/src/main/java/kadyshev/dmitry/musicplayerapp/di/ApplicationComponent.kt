@@ -3,6 +3,7 @@ package kadyshev.dmitry.musicplayerapp.di
 import android.app.Application
 import dagger.BindsInstance
 import dagger.Component
+import kadyshev.dmitry.core_di.ApplicationScope
 import kadyshev.dmitry.ui_player.PlayerComponent
 import kadyshev.dmitry.ui_saved_tracks.SavedComponent
 import kadyshev.dmitry.ui_search.SearchComponent
